@@ -60,7 +60,7 @@ export default function App() {
             <Body>
               <Web3ReactManager>
                 <BrowserRouter>
-                  <NavigationTabs />
+                  {/* <NavigationTabs /> */}
                   {/* this Suspense is for route code-splitting */}
                   <Suspense fallback={null}>
                     <Switch>
@@ -82,28 +82,6 @@ export default function App() {
                             return <Redirect to={{ pathname: '/swap' }} />
                           }
                         }}
-                      />
-                      <Route exact strict path="/send" component={() => <Send params={params} />} />
-                      <Route
-                        exact
-                        strict
-                        path="/send/:tokenAddress?"
-                        render={({ match }) => {
-                          if (isAddress(match.params.tokenAddress)) {
-                            return <Send initialCurrency={isAddress(match.params.tokenAddress)} params={params} />
-                          } else {
-                            return <Redirect to={{ pathname: '/send' }} />
-                          }
-                        }}
-                      />
-                      <Route
-                        path={[
-                          '/add-liquidity',
-                          '/remove-liquidity',
-                          '/create-exchange',
-                          '/create-exchange/:tokenAddress?'
-                        ]}
-                        component={() => <Pool params={params} />}
                       />
                       <Redirect to="/swap" />
                     </Switch>
