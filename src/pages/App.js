@@ -60,7 +60,7 @@ export default function App() {
             <Body>
               <Web3ReactManager>
                 <BrowserRouter>
-                  {/* <NavigationTabs /> */}
+                  <NavigationTabs />
                   {/* this Suspense is for route code-splitting */}
                   <Suspense fallback={null}>
                     <Switch>
