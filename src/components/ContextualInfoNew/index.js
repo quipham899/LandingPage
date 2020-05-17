@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
+// import React, { useState } from 'react'
 import styled, { css } from 'styled-components'
 import { transparentize } from 'polished'
-import ReactGA from 'react-ga'
-import { ReactComponent as Dropup } from '../../assets/images/dropup-blue.svg'
-import { ReactComponent as Dropdown } from '../../assets/images/dropdown-blue.svg'
+// import ReactGA from 'react-ga'
+// import { ReactComponent as Dropup } from '../../assets/images/dropup-blue.svg'
+// import { ReactComponent as Dropdown } from '../../assets/images/dropdown-blue.svg'
 
 const SummaryWrapper = styled.div`
   color: ${({ error, brokenTokenWarning, theme }) => (error || brokenTokenWarning ? theme.salmonRed : theme.doveGray)};
@@ -19,7 +20,7 @@ const SummaryWrapperContainer = styled.div`
   text-align: center;
   margin-top: 1rem;
   padding-top: 1rem;
-  cursor: pointer;
+  cursor: default;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
@@ -58,31 +59,31 @@ const ErrorSpan = styled.span`
         `}
 `
 
-const WrappedDropup = ({ isError, highSlippageWarning, ...rest }) => <Dropup {...rest} />
-const ColoredDropup = styled(WrappedDropup)`
-  path {
-    stroke: ${({ isError, theme }) => (isError ? theme.salmonRed : theme.royalBlue)};
+// const WrappedDropup = ({ isError, highSlippageWarning, ...rest }) => <Dropup {...rest} />
+// const ColoredDropup = styled(WrappedDropup)`
+//   path {
+//     stroke: ${({ isError, theme }) => (isError ? theme.salmonRed : theme.royalBlue)};
 
-    ${({ highSlippageWarning, theme }) =>
-      highSlippageWarning &&
-      css`
-        stroke: ${theme.salmonRed};
-      `}
-  }
-`
+//     ${({ highSlippageWarning, theme }) =>
+//       highSlippageWarning &&
+//       css`
+//         stroke: ${theme.salmonRed};
+//       `}
+//   }
+// `
 
-const WrappedDropdown = ({ isError, highSlippageWarning, ...rest }) => <Dropdown {...rest} />
-const ColoredDropdown = styled(WrappedDropdown)`
-  path {
-    stroke: ${({ isError, theme }) => (isError ? theme.salmonRed : theme.royalBlue)};
+// const WrappedDropdown = ({ isError, highSlippageWarning, ...rest }) => <Dropdown {...rest} />
+// const ColoredDropdown = styled(WrappedDropdown)`
+//   path {
+//     stroke: ${({ isError, theme }) => (isError ? theme.salmonRed : theme.royalBlue)};
 
-    ${({ highSlippageWarning, theme }) =>
-      highSlippageWarning &&
-      css`
-        stroke: ${theme.salmonRed};
-      `}
-  }
-`
+//     ${({ highSlippageWarning, theme }) =>
+//       highSlippageWarning &&
+//       css`
+//         stroke: ${theme.salmonRed};
+//       `}
+//   }
+// `
 
 export default function ContextualInfo({
   openDetailsText = 'Advanced Details',
@@ -95,21 +96,21 @@ export default function ContextualInfo({
   brokenTokenWarning,
   dropDownContent
 }) {
-  const [showDetails, setShowDetails] = useState(false)
+  // const [showDetails, setShowDetails] = useState(true)
   return !allowExpand ? (
     <SummaryWrapper brokenTokenWarning={brokenTokenWarning}>{contextualInfo}</SummaryWrapper>
   ) : (
     <>
       <SummaryWrapperContainer
-        onClick={() => {
-          !showDetails &&
-            ReactGA.event({
-              category: 'Advanced Interaction',
-              action: 'Open Advanced Details',
-              label: 'Swap/Send Page Details'
-            })
-          setShowDetails(s => !s)
-        }}
+        // onClick={() => {
+        //   !showDetails &&
+        //     ReactGA.event({
+        //       category: 'Advanced Interaction',
+        //       action: 'Open Advanced Details',
+        //       label: 'Swap/Send Page Details'
+        //     })
+        //   setShowDetails(s => !s)
+        // }}
       >
         <>
           <ErrorSpan isError={isError} slippageWarning={slippageWarning} highSlippageWarning={highSlippageWarning}>
@@ -118,16 +119,17 @@ export default function ContextualInfo({
                 ⚠️
               </span>
             )}
-            {contextualInfo ? contextualInfo : showDetails ? closeDetailsText : openDetailsText}
+            {contextualInfo || ''}
           </ErrorSpan>
-          {showDetails ? (
+          {/* {showDetails ? (
             <ColoredDropup isError={isError} highSlippageWarning={highSlippageWarning} />
           ) : (
             <ColoredDropdown isError={isError} highSlippageWarning={highSlippageWarning} />
-          )}
+          )} */}
         </>
       </SummaryWrapperContainer>
-      {showDetails && <Details>{dropDownContent()}</Details>}
+      {/* {showDetails && <Details>{dropDownContent()}</Details>} */}
+      <Details>{dropDownContent()}</Details>
     </>
   )
 }
