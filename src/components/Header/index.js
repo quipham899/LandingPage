@@ -38,14 +38,14 @@ const Title = styled.div`
   }
 
   #link {
-    text-decoration-color: ${({ theme }) => theme.UniswapPink};
   }
+  text-decoration-color: ${({ theme }) => theme.UniswapPink};
+  color: ${({ theme }) => theme.wisteriaPurple};
 
   #title {
     display: inline;
     font-size: 1rem;
     font-weight: 500;
-    color: ${({ theme }) => theme.wisteriaPurple};
     :hover {
       color: ${({ theme }) => darken(0.1, theme.wisteriaPurple)};
     }
@@ -57,15 +57,8 @@ export default function Header() {
     <HeaderFrame>
       <HeaderElement>
         <Title>
-          <Nod>
-            <Link id="link" href="https://uniswap.io">
-              <span role="img" aria-label="unicorn">
-                🦄{'  '}
-              </span>
-            </Link>
-          </Nod>
-          <Link id="link" href="https://uniswap.io">
-            <h1 id="title">Uniswap</h1>
+          <Link id="link" href="#">
+            <h1 id="title">Candy Shop</h1>
           </Link>
         </Title>
       </HeaderElement>

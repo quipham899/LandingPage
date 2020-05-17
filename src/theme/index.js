@@ -52,7 +52,7 @@ const theme = darkMode => ({
   modalBackground: darkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.5)',
   inputBackground: darkMode ? '#202124' : white,
   placeholderGray: darkMode ? '#5F5F5F' : '#E1E1E1',
-  shadowColor: darkMode ? '#000' : '#2F80ED',
+  shadowColor: darkMode ? '#000' : '#107a8b',
 
   // grays
   concreteGray: darkMode ? '#292C2F' : '#FAFAFA',
@@ -69,12 +69,12 @@ const theme = darkMode => ({
   charcoalBlack: darkMode ? '#F2F2F2' : '#404040',
   // blues
   zumthorBlue: darkMode ? '#212529' : '#EBF4FF',
-  malibuBlue: darkMode ? '#E67AEF' : '#5CA2FF',
-  royalBlue: darkMode ? '#DC6BE5' : '#2F80ED',
+  malibuBlue: darkMode ? '#83e85a' : '#2cb978',
+  royalBlue: darkMode ? '#2cb978' : '#107a8b',
   loadingBlue: darkMode ? '#e4f0ff' : '#e4f0ff',
 
   // purples
-  wisteriaPurple: '#DC6BE5',
+  wisteriaPurple: '#2cb978',
   // reds
   salmonRed: '#FF6871',
   // orange
@@ -82,7 +82,7 @@ const theme = darkMode => ({
   // yellows
   warningYellow: '#FFE270',
   // pink
-  uniswapPink: '#DC6BE5',
+  uniswapPink: '#2cb978',
   //green
   connectedGreen: '#27AE60',
 
@@ -93,7 +93,7 @@ const theme = darkMode => ({
   textHover: darkMode ? theme.uniswapPink : theme.doveGray,
 
   // connect button when loggedout
-  buttonFaded: darkMode ? '#DC6BE5' : '#737373',
+  buttonFaded: darkMode ? '#2cb978' : '#737373',
 
   // media queries
   mediaWidth: mediaWidthTemplates,
