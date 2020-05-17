@@ -259,7 +259,8 @@ const LastSummaryText = styled.div`
 const SlippageSelector = styled.div`
   background-color: ${({ theme }) => darken(0.04, theme.concreteGray)};
   padding: 1rem 1.25rem 1rem 1.25rem;
-  border-radius: 12px 12px 0 0;
+  border-radius: 12px;
+  margin: 0 -0.5rem;
 `
 
 const Percent = styled.div`
@@ -282,10 +283,13 @@ const Faded = styled.span`
   opacity: 0.7;
 `
 
-const TransactionInfo = styled.div`
+const SlippageComparator = styled.div`
   padding: 1.25rem 1.25rem 1rem 1.25rem;
 `
 
+const AmountAfterMaxSlippage = styled.div`
+padding: 1.25rem 1.25rem 1rem 1.25rem;
+`
 const ValueWrapper = styled.span`
   padding: 0.125rem 0.3rem 0.1rem 0.3rem;
   background-color: ${({ theme }) => darken(0.04, theme.concreteGray)};
@@ -296,7 +300,8 @@ const ValueWrapper = styled.span`
 const DeadlineSelector = styled.div`
   background-color: ${({ theme }) => darken(0.04, theme.concreteGray)};
   padding: 1rem 1.25rem 1rem 1.25rem;
-  border-radius: 0 0 12px 12px;
+  margin: 0 -0.5rem;
+  border-radius: 12px;
 `
 const DeadlineRow = SlippageRow
 const DeadlineInput = OptionCustom
@@ -370,7 +375,6 @@ export default function TransactionDetails(props) {
         slippageWarning={props.slippageWarning && !contextualInfo}
         highSlippageWarning={props.highSlippageWarning && !contextualInfo}
         brokenTokenWarning={props.brokenTokenWarning}
-        renderTransactionDetails={renderTransactionDetails}
         dropDownContent={dropDownContent}
       />
     )
@@ -379,7 +383,12 @@ export default function TransactionDetails(props) {
   const dropDownContent = () => {
     return (
       <>
-        {renderTransactionDetails()}
+        <SlippageComparator>
+            {t('candyshopPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
+          <LastSummaryText>
+            {t('uniswapPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
+          </LastSummaryText>
+        </SlippageComparator>
         <SlippageSelector>
           <SlippageRow>
             Limit additional price slippage
@@ -505,6 +514,58 @@ export default function TransactionDetails(props) {
             </BottomError>
           </SlippageRow>
         </SlippageSelector>
+        <AmountAfterMaxSlippage>
+        {
+          props.independentField === props.INPUT ?
+            (
+              <div>
+                {t('youAreSelling')}{' '}
+                <ValueWrapper>
+                  {b(
+                    `${amountFormatter(
+                      props.independentValueParsed,
+                      props.independentDecimals,
+                      Math.min(4, props.independentDecimals)
+                    )} ${props.inputSymbol}`
+                  )}
+                </ValueWrapper>{' '}
+                {t('forAtLeast')}
+                <ValueWrapper>
+                  {b(
+                    `${amountFormatter(
+                      props.dependentValueMinumum,
+                      props.dependentDecimals,
+                      Math.min(4, props.dependentDecimals)
+                    )} ${props.outputSymbol}`
+                  )}
+                </ValueWrapper>
+              </div>
+            ) : (
+              <div>
+                {t('youAreBuying')}{' '}
+                <ValueWrapper>
+                  {b(
+                    `${amountFormatter(
+                      props.independentValueParsed,
+                      props.independentDecimals,
+                      Math.min(4, props.independentDecimals)
+                    )} ${props.outputSymbol}`
+                  )}
+                </ValueWrapper>{' '}
+                {t('forAtMost')}{' '}
+                <ValueWrapper>
+                  {b(
+                    `${amountFormatter(
+                      props.dependentValueMaximum,
+                      props.dependentDecimals,
+                      Math.min(4, props.dependentDecimals)
+                    )} ${props.inputSymbol}`
+                  )}
+                </ValueWrapper>{' '}
+              </div>
+            )
+        }
+        </AmountAfterMaxSlippage>
         <DeadlineSelector>
           Set swap deadline (minutes from now)
           <DeadlineRow wrap>
@@ -643,125 +704,5 @@ export default function TransactionDetails(props) {
   }
 
   const b = text => <Bold>{text}</Bold>
-
-  const renderTransactionDetails = () => {
-    if (props.independentField === props.INPUT) {
-      return props.sending ? (
-        <TransactionInfo>
-          <div>
-            {t('youAreSelling')}{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.independentValueParsed,
-                  props.independentDecimals,
-                  Math.min(4, props.independentDecimals)
-                )} ${props.inputSymbol}`
-              )}
-            </ValueWrapper>
-          </div>
-          <LastSummaryText>
-            {b(props.recipientAddress)} {t('willReceive')}{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.dependentValueMinumum,
-                  props.dependentDecimals,
-                  Math.min(4, props.dependentDecimals)
-                )} ${props.outputSymbol}`
-              )}
-            </ValueWrapper>{' '}
-          </LastSummaryText>
-          <LastSummaryText>
-            {t('priceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          </LastSummaryText>
-        </TransactionInfo>
-      ) : (
-        <TransactionInfo>
-          <div>
-            {t('youAreSelling')}{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.independentValueParsed,
-                  props.independentDecimals,
-                  Math.min(4, props.independentDecimals)
-                )} ${props.inputSymbol}`
-              )}
-            </ValueWrapper>{' '}
-            {t('forAtLeast')}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.dependentValueMinumum,
-                  props.dependentDecimals,
-                  Math.min(4, props.dependentDecimals)
-                )} ${props.outputSymbol}`
-              )}
-            </ValueWrapper>
-          </div>
-          <LastSummaryText>
-            {t('priceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          </LastSummaryText>
-        </TransactionInfo>
-      )
-    } else {
-      return props.sending ? (
-        <TransactionInfo>
-          <div>
-            {t('youAreSending')}{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.independentValueParsed,
-                  props.independentDecimals,
-                  Math.min(4, props.independentDecimals)
-                )} ${props.outputSymbol}`
-              )}
-            </ValueWrapper>{' '}
-            {t('to')} {b(props.recipientAddress)} {t('forAtMost')}{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  props.dependentValueMaximum,
-                  props.dependentDecimals,
-                  Math.min(4, props.dependentDecimals)
-                )} ${props.inputSymbol}`
-              )}
-            </ValueWrapper>{' '}
-          </div>
-          <LastSummaryText>
-            {t('priceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          </LastSummaryText>
-        </TransactionInfo>
-      ) : (
-        <TransactionInfo>
-          {t('youAreBuying')}{' '}
-          <ValueWrapper>
-            {b(
-              `${amountFormatter(
-                props.independentValueParsed,
-                props.independentDecimals,
-                Math.min(4, props.independentDecimals)
-              )} ${props.outputSymbol}`
-            )}
-          </ValueWrapper>{' '}
-          {t('forAtMost')}{' '}
-          <ValueWrapper>
-            {b(
-              `${amountFormatter(
-                props.dependentValueMaximum,
-                props.dependentDecimals,
-                Math.min(4, props.dependentDecimals)
-              )} ${props.inputSymbol}`
-            )}
-          </ValueWrapper>{' '}
-          <LastSummaryText>
-            {t('priceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          </LastSummaryText>
-        </TransactionInfo>
-      )
-    }
-  }
   return <>{renderSummary()}</>
 }

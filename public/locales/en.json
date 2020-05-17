@@ -84,7 +84,8 @@
   "symbol": "Symbol",
   "decimals": "Decimals",
   "enterTokenCont": "Enter a token address to continue",
-  "priceChange": "Expected price slippage",
+  "uniswapPriceChange": "Expected price slippage on Uniswap",
+  "candyshopPriceChange": "Expected price slippage on Candyshop",
   "forAtLeast": "for at least ",
   "brokenToken": "The selected token is not compatible with Uniswap V1. Adding liquidity will result in locked funds.",
   "broken777": "ERC-777 tokens are not supported in Uniswap V1."
