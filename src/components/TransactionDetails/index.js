@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled, { css, keyframes } from 'styled-components'
 import { darken, lighten } from 'polished'
+import { ethers } from 'ethers'
 import { isAddress, amountFormatter } from '../../utils'
 import { useDebounce } from '../../hooks'
-
 import question from '../../assets/images/question.svg'
 
 import NewContextualInfo from '../../components/ContextualInfoNew'
@@ -290,6 +290,9 @@ const SlippageComparator = styled.div`
 const AmountAfterMaxSlippage = styled.div`
 padding: 1.25rem 1.25rem 1rem 1.25rem;
 `
+const TotalCandy = styled.div`
+padding: 1.25rem 1.25rem 1rem 1.25rem;
+`
 const ValueWrapper = styled.span`
   padding: 0.125rem 0.3rem 0.1rem 0.3rem;
   background-color: ${({ theme }) => darken(0.04, theme.concreteGray)};
@@ -306,6 +309,15 @@ const DeadlineSelector = styled.div`
 const DeadlineRow = SlippageRow
 const DeadlineInput = OptionCustom
 
+const CandySelector = styled.div`
+  background-color: ${({ theme }) => darken(0.04, theme.concreteGray)};
+  padding: 1rem 1.25rem 1rem 1.25rem;
+  margin: 0 -0.5rem;
+  border-radius: 12px;
+`
+const CandyRow = SlippageRow
+const CandyInput = OptionCustom
+
 export default function TransactionDetails(props) {
   const { t } = useTranslation()
 
@@ -315,7 +327,9 @@ export default function TransactionDetails(props) {
 
   const inputRef = useRef()
 
-  const [showPopup, setPopup] = useState(false)
+  const [showSlippageLimitPopup, setSlippageLimitPopup] = useState(false)
+
+  const [showCandyPopup, setCandyPopup] = useState(false)
 
   const [userInput, setUserInput] = useState('')
   const debouncedInput = useDebounce(userInput, 150)
@@ -327,6 +341,7 @@ export default function TransactionDetails(props) {
   })
 
   const [deadlineInput, setDeadlineInput] = useState('')
+  const [candyInput, setCandyInput] = useState(0)
 
   function renderSummary() {
     let contextualInfo = ''
@@ -394,18 +409,18 @@ export default function TransactionDetails(props) {
             Limit additional price slippage
             <QuestionWrapper
               onClick={() => {
-                setPopup(!showPopup)
+                setSlippageLimitPopup(!showSlippageLimitPopup)
               }}
               onMouseEnter={() => {
-                setPopup(true)
+                setSlippageLimitPopup(true)
               }}
               onMouseLeave={() => {
-                setPopup(false)
+                setSlippageLimitPopup(false)
               }}
             >
               <HelpCircleStyled src={question} alt="popup" />
             </QuestionWrapper>
-            {showPopup ? (
+            {showSlippageLimitPopup ? (
               <Popup>
                 Lowering this limit decreases your risk of frontrunning. However, this makes it more likely that your
                 transaction will fail due to normal price movements.
@@ -566,14 +581,71 @@ export default function TransactionDetails(props) {
             )
         }
         </AmountAfterMaxSlippage>
-        <DeadlineSelector>
+        <CandySelector>
+          <CandyRow>
+            Number of candies to buy
+            <QuestionWrapper
+              onClick={() => {
+                setCandyPopup(!showCandyPopup)
+              }}
+              onMouseEnter={() => {
+                setCandyPopup(true)
+              }}
+              onMouseLeave={() => {
+                setCandyPopup(false)
+              }}
+            >
+              <HelpCircleStyled src={question} alt="popup" />
+            </QuestionWrapper>
+            {showCandyPopup ? (
+              <Popup>
+                You can buy candies while performing this trade. Each candy costs x. 
+                At the end of each cycle this amount will be returned to the user and interest is given to the lottery winner.
+                You can get free candies by performaing large trades that qualify for arbitrage.
+              </Popup>
+            ) : (
+              ''
+            )}
+          </CandyRow>
+          <CandyRow wrap>
+            <CandyInput>
+              <Input placeholder={'Candies'} value={candyInput} onChange={parseCandyInput} />
+            </CandyInput>
+          </CandyRow>
+        </CandySelector>
+        <TotalCandy>
+        <div>
+          You are buying{' '}
+          <ValueWrapper>
+            {b(
+              `${amountFormatter(
+                ethers.utils.bigNumberify(candyInput),
+                0,
+                0
+              )}`
+            )}
+          </ValueWrapper>{' '}
+          and getting{' '}
+          <ValueWrapper>
+            {b(
+              `${amountFormatter(
+                ethers.utils.bigNumberify(3),
+                0,
+                0
+              )}`
+            )}
+          </ValueWrapper>{' '}
+          free Candies.
+        </div>
+        </TotalCandy>
+        {/* <DeadlineSelector>
           Set swap deadline (minutes from now)
           <DeadlineRow wrap>
             <DeadlineInput>
               <Input placeholder={'Deadline'} value={deadlineInput} onChange={parseDeadlineInput} />
             </DeadlineInput>
           </DeadlineRow>
-        </DeadlineSelector>
+        </DeadlineSelector> */}
       </>
     )
   }
@@ -700,6 +772,14 @@ export default function TransactionDetails(props) {
     if (acceptableValues.some(re => re.test(input))) {
       setDeadlineInput(input)
       setDeadline(parseInt(input) * 60)
+    }
+  }
+  const parseCandyInput = e => {
+    const input = e.target.value || 0
+
+    const acceptableValues = [/^$/, /^\d+$/]
+    if (acceptableValues.some(re => re.test(input))) {
+      setCandyInput(input)
     }
   }
 
