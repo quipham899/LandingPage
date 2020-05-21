@@ -252,7 +252,7 @@ const Bold = styled.span`
   font-weight: 500;
 `
 
-const LastSummaryText = styled.div`
+const SpaceTop = styled.div`
   padding-top: 0.5rem;
 `
 
@@ -399,10 +399,10 @@ export default function TransactionDetails(props) {
     return (
       <>
         <SlippageComparator>
-            {t('candyshopPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          <LastSummaryText>
+            {t('candyshopPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)} </ValueWrapper>
+          <SpaceTop>
             {t('uniswapPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
-          </LastSummaryText>
+          </SpaceTop>
         </SlippageComparator>
         <SlippageSelector>
           <SlippageRow>
@@ -584,7 +584,7 @@ export default function TransactionDetails(props) {
         <CandySelector>
           <CandyRow>
             Number of candies to buy
-            <QuestionWrapper
+            {/* <QuestionWrapper
               onClick={() => {
                 setCandyPopup(!showCandyPopup)
               }}
@@ -596,8 +596,8 @@ export default function TransactionDetails(props) {
               }}
             >
               <HelpCircleStyled src={question} alt="popup" />
-            </QuestionWrapper>
-            {showCandyPopup ? (
+            </QuestionWrapper> */}
+            {/* {showCandyPopup ? (
               <Popup>
                 You can buy candies while performing this trade. Each candy costs x. 
                 At the end of each cycle this amount will be returned to the user and interest is given to the lottery winner.
@@ -605,38 +605,44 @@ export default function TransactionDetails(props) {
               </Popup>
             ) : (
               ''
-            )}
+            )} */}
           </CandyRow>
           <CandyRow wrap>
             <CandyInput>
               <Input placeholder={'Candies'} value={candyInput} onChange={parseCandyInput} />
-            </CandyInput>
+            </CandyInput>{' '}
+            {/* x {props.inputCurrencyCandyPrice}{' '} = {' '}{b(candyInput * props.inputCurrencyCandyPrice)} */}
+
           </CandyRow>
         </CandySelector>
         <TotalCandy>
-        <div>
-          You are buying{' '}
+          Candy Price {' '}
           <ValueWrapper>
-            {b(
-              `${amountFormatter(
-                ethers.utils.bigNumberify(candyInput),
-                0,
-                0
-              )}`
-            )}
-          </ValueWrapper>{' '}
-          and getting{' '}
-          <ValueWrapper>
-            {b(
-              `${amountFormatter(
-                ethers.utils.bigNumberify(3),
-                0,
-                0
-              )}`
-            )}
-          </ValueWrapper>{' '}
-          free Candies.
-        </div>
+            {b(`${props.inputCurrencyCandyPrice} ${props.inputSymbol}`)}
+          </ValueWrapper>
+          <SpaceTop>
+            You are buying{' '}
+            <ValueWrapper>
+              {b(
+                `${amountFormatter(
+                  ethers.utils.bigNumberify(candyInput),
+                  0,
+                  0
+                )}`
+              )}
+            </ValueWrapper>{' '}
+            and getting{' '}
+            <ValueWrapper>
+              {b(
+                `${amountFormatter(
+                  ethers.utils.bigNumberify(3),
+                  0,
+                  0
+                )}`
+              )}
+            </ValueWrapper>{' '}
+            free Candies.
+          </SpaceTop>
         </TotalCandy>
         {/* <DeadlineSelector>
           Set swap deadline (minutes from now)
