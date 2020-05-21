@@ -660,6 +660,26 @@ export const INITIAL_TOKENS_CONTEXT = {
       [DECIMALS]: 18,
       [EXCHANGE_ADDRESS]: '0xaF51BaAA766b65E8B3Ee0C2c33186325ED01eBD5'
     }
+  },
+  3: {
+    '0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff': {
+      [NAME]: 'cDai',
+      [SYMBOL]: 'cDAI',
+      [DECIMALS]: 6,
+      [EXCHANGE_ADDRESS]: '0x91D04010d8b3A17338e1d0EBEc5B7A82A2304feC'
+    },
+    '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd': {
+      [NAME]: 'Dai Stable Coin',
+      [SYMBOL]: 'DAI',
+      [DECIMALS]: 18,
+      [EXCHANGE_ADDRESS]: '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
+    },
+    '0x20fE562d797A42Dcb3399062AE9546cd06f63280': {
+      [NAME]: 'ChainLink Token',
+      [SYMBOL]: 'LINK',
+      [DECIMALS]: 18,
+      [EXCHANGE_ADDRESS]: '0x4426F644f5999Aef8A7d87F0Af6e0755E94a2588'
+    }
   }
 }
 
