@@ -28,6 +28,7 @@ import CANDYSTORE_ABI from '../../constants/abis/candyStore.json'
 
 const INPUT = 0
 const OUTPUT = 1
+const ETH = 'ETH'
 
 const ETH_TO_TOKEN = 0
 const TOKEN_TO_ETH = 1
@@ -147,7 +148,7 @@ function swapStateReducer(state, action) {
   switch (action.type) {
     case 'SET_CANDY_PRICE': {
       const { price } = action.payload
-      console.log('price', price)
+      console.log('SET_CANDY_PRICE', price)
       return {
         ...state,
         inputCurrencyCandyPrice: price
@@ -167,8 +168,9 @@ function swapStateReducer(state, action) {
       const { inputCurrency, outputCurrency } = state
       const { field, currency } = action.payload
 
-      const newInputCurrency = field === INPUT ? currency : inputCurrency
-      const newOutputCurrency = field === OUTPUT ? currency : outputCurrency
+      console.log('SELECT_CURRENCY', action.payload)
+      const newInputCurrency = field === INPUT ? currency : (currency !== ETH ? ETH : inputCurrency)
+      const newOutputCurrency = field === OUTPUT ? currency : (currency !== ETH ? ETH : outputCurrency)
 
       if (newInputCurrency === newOutputCurrency) {
         return {
@@ -321,9 +323,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     getInitialSwapState
   )
 
-
   const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, inputCurrencyCandyPrice } = swapState
-  
+
   const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
   const { library } = useWeb3React()
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
