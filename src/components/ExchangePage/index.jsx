@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useWeb3React } from '../../hooks'
 import { brokenTokens } from '../../constants'
-import { amountFormatter, calculateGasMargin, isAddress } from '../../utils'
+import { amountFormatter, calculateGasMargin, isAddress, getContract } from '../../utils'
 
 import { useExchangeContract } from '../../hooks'
 import { useTokenDetails, INITIAL_TOKENS_CONTEXT } from '../../contexts/Tokens'
@@ -23,6 +23,8 @@ import OversizedPanel from '../OversizedPanel'
 import TransactionDetails from '../TransactionDetails'
 import ArrowDown from '../../assets/svg/SVGArrowDown'
 import WarningCard from '../WarningCard'
+
+import CANDYSTORE_ABI from '../../constants/abis/candyStore.json'
 
 const INPUT = 0
 const OUTPUT = 1
@@ -124,6 +126,7 @@ function calculateEtherTokenInputFromOutput(outputAmount, inputReserve, outputRe
 
 function getInitialSwapState(state) {
   return {
+    inputCurrencyCandyPrice: state.inputCurrencyCandyPrice,
     independentValue: state.exactFieldURL && state.exactAmountURL ? state.exactAmountURL : '', // this is a user input
     dependentValue: '', // this is a calculated number
     independentField: state.exactFieldURL === 'output' ? OUTPUT : INPUT,
@@ -142,6 +145,14 @@ function getInitialSwapState(state) {
 
 function swapStateReducer(state, action) {
   switch (action.type) {
+    case 'SET_CANDY_PRICE': {
+      const { price } = action.payload
+      console.log('price', price)
+      return {
+        ...state,
+        inputCurrencyCandyPrice: price
+      }
+    }
     case 'FLIP_INDEPENDENT': {
       const { independentField, inputCurrency, outputCurrency } = state
       return {
@@ -300,6 +311,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const [swapState, dispatchSwapState] = useReducer(
     swapStateReducer,
     {
+      inputCurrencyCandyPrice: 0,
       initialCurrency: initialCurrency,
       inputCurrencyURL: params.inputCurrency,
       outputCurrencyURL: params.outputCurrency,
@@ -309,7 +321,24 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     getInitialSwapState
   )
 
-  const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency } = swapState
+
+  const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, inputCurrencyCandyPrice } = swapState
+  
+  const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const { library } = useWeb3React()
+  const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
+  useEffect(() => {
+    async function fetchCandyPrice() {
+      const openDraw = await candyStore.openDraw()
+      const lottery = await candyStore.lottery(openDraw)
+      const price = lottery.candyPrice.toNumber()
+      dispatchSwapState({
+        type: 'SET_CANDY_PRICE',
+        payload: { price }
+      })
+    }
+    fetchCandyPrice()
+  }, [inputCurrency])
 
   useEffect(() => {
     setBrokenTokenWarning(false)
@@ -904,6 +933,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         dependentDecimals={dependentDecimals}
         independentDecimals={independentDecimals}
         percentSlippageFormatted={percentSlippageFormatted}
+        inputCurrencyCandyPrice={inputCurrencyCandyPrice}
         setcustomSlippageError={setcustomSlippageError}
         recipientAddress={recipient.address}
         sending={sending}
