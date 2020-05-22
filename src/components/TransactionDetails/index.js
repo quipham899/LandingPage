@@ -611,14 +611,14 @@ export default function TransactionDetails(props) {
             <CandyInput>
               <Input placeholder={'Candies'} value={candyInput} onChange={parseCandyInput} />
             </CandyInput>{' '}
-            {/* x {props.inputCurrencyCandyPrice}{' '} = {' '}{b(candyInput * props.inputCurrencyCandyPrice)} */}
+            {/* x {props.candyTknPrice}{' '} = {' '}{b(candyInput * props.candyTknPrice)} */}
 
           </CandyRow>
         </CandySelector>
         <TotalCandy>
           Candy Price {' '}
           <ValueWrapper>
-            {b(`${props.inputCurrencyCandyPrice} ${props.inputSymbol}`)}
+            {b(`${props.candyTknPrice.dp(3)} ${props.inputSymbol}`)}
           </ValueWrapper>
           <SpaceTop>
             You are buying{' '}

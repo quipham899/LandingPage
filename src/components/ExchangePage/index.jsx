@@ -4,6 +4,7 @@ import { createBrowserHistory } from 'history'
 import { ethers } from 'ethers'
 import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
+import { BigNumber } from '@uniswap/sdk'
 
 import { useWeb3React } from '../../hooks'
 import { brokenTokens } from '../../constants'
@@ -12,7 +13,7 @@ import { amountFormatter, calculateGasMargin, isAddress, getContract } from '../
 import { useExchangeContract } from '../../hooks'
 import { useTokenDetails, INITIAL_TOKENS_CONTEXT } from '../../contexts/Tokens'
 import { useTransactionAdder } from '../../contexts/Transactions'
-import { useAddressBalance, useExchangeReserves } from '../../contexts/Balances'
+import { useAddressBalance, useExchangeReserves, ethStablePrice } from '../../contexts/Balances'
 import { useAddressAllowance } from '../../contexts/Allowances'
 import { useWalletModalToggle } from '../../contexts/Application'
 
@@ -127,7 +128,7 @@ function calculateEtherTokenInputFromOutput(outputAmount, inputReserve, outputRe
 
 function getInitialSwapState(state) {
   return {
-    inputCurrencyCandyPrice: state.inputCurrencyCandyPrice,
+    candyStablePrice: state.candyStablePrice,
     independentValue: state.exactFieldURL && state.exactAmountURL ? state.exactAmountURL : '', // this is a user input
     dependentValue: '', // this is a calculated number
     independentField: state.exactFieldURL === 'output' ? OUTPUT : INPUT,
@@ -147,11 +148,10 @@ function getInitialSwapState(state) {
 function swapStateReducer(state, action) {
   switch (action.type) {
     case 'SET_CANDY_PRICE': {
-      const { price } = action.payload
-      console.log('SET_CANDY_PRICE', price)
+      const { candyStablePrice } = action.payload
       return {
         ...state,
-        inputCurrencyCandyPrice: price
+        candyStablePrice: candyStablePrice
       }
     }
     case 'FLIP_INDEPENDENT': {
@@ -168,7 +168,6 @@ function swapStateReducer(state, action) {
       const { inputCurrency, outputCurrency } = state
       const { field, currency } = action.payload
 
-      console.log('SELECT_CURRENCY', action.payload)
       const newInputCurrency = field === INPUT ? currency : (currency !== ETH ? ETH : inputCurrency)
       const newOutputCurrency = field === OUTPUT ? currency : (currency !== ETH ? ETH : outputCurrency)
 
@@ -259,6 +258,8 @@ function getMarketRate(
   }
 }
 
+
+
 export default function ExchangePage({ initialCurrency, sending = false, params }) {
   const { t } = useTranslation()
   const { account, chainId, error } = useWeb3React()
@@ -313,7 +314,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const [swapState, dispatchSwapState] = useReducer(
     swapStateReducer,
     {
-      inputCurrencyCandyPrice: 0,
+      candyStablePrice: new BigNumber(0),
       initialCurrency: initialCurrency,
       inputCurrencyURL: params.inputCurrency,
       outputCurrencyURL: params.outputCurrency,
@@ -323,7 +324,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     getInitialSwapState
   )
 
-  const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, inputCurrencyCandyPrice } = swapState
+  const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, candyStablePrice } = swapState
 
   const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
   const { library } = useWeb3React()
@@ -332,10 +333,10 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     async function fetchCandyPrice() {
       const openDraw = await candyStore.openDraw()
       const lottery = await candyStore.lottery(openDraw)
-      const price = lottery.candyPrice.toNumber()
+      const price = new BigNumber(lottery.candyPrice.toString())
       dispatchSwapState({
         type: 'SET_CANDY_PRICE',
-        payload: { price }
+        payload: { candyStablePrice: price }
       })
     }
     fetchCandyPrice()
@@ -620,6 +621,16 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const estimatedText = `(${t('estimated')})`
   function formatBalance(value) {
     return `Balance: ${value}`
+  }
+  
+  let candyEthPrice
+  let candyTknPrice
+  const TEN = new BigNumber(10)
+  const DECIMAL_FACTOR = TEN.pow(18)
+  if (marketRate && candyStablePrice && ethStablePrice) {
+    const marketRateBN = new BigNumber(marketRate)
+    candyEthPrice = candyStablePrice.div(ethStablePrice)
+    candyTknPrice = inputCurrency === ETH ? candyEthPrice : candyEthPrice.div(marketRateBN.div(DECIMAL_FACTOR))
   }
 
   async function onSwap() {
@@ -934,7 +945,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         dependentDecimals={dependentDecimals}
         independentDecimals={independentDecimals}
         percentSlippageFormatted={percentSlippageFormatted}
-        inputCurrencyCandyPrice={inputCurrencyCandyPrice}
+        candyTknPrice={candyTknPrice}
         setcustomSlippageError={setcustomSlippageError}
         recipientAddress={recipient.address}
         sending={sending}

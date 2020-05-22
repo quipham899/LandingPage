@@ -468,12 +468,18 @@ const buildReserveObject = (
     amount: tokenReserveAmount
   }
 })
-const daiTokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
-const daiExchangeAddress = '0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667'
-const usdcTokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
-const usdcExchangeAddress = '0x97deC872013f6B5fB443861090ad931542878126'
-const tusdTokenAddress = '0x0000000000085d4780B73119b644AE5ecd22b376'
-const tusdExchangeAddress = '0x5048b9d01097498Fd72F3F14bC9Bc74A5aAc8fA7'
+// const daiTokenAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+// const daiExchangeAddress = '0x2a1530C4C41db0B0b2bB646CB5Eb1A67b7158667'
+// const usdcTokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+// const usdcExchangeAddress = '0x97deC872013f6B5fB443861090ad931542878126'
+// const tusdTokenAddress = '0x0000000000085d4780B73119b644AE5ecd22b376'
+// const tusdExchangeAddress = '0x5048b9d01097498Fd72F3F14bC9Bc74A5aAc8fA7'
+const daiTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
+const daiExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
+const usdcTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
+const usdcExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
+const tusdTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
+const tusdExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
 export function useETHPriceInUSD() {
   const { chainId } = useWeb3React()
 
@@ -484,7 +490,7 @@ export function useETHPriceInUSD() {
   let tusdReserveETH = useAddressBalance(tusdExchangeAddress, 'ETH')
   let tusdReserveToken = useAddressBalance(tusdExchangeAddress, tusdTokenAddress)
 
-  const [price, setPrice] = useState<undefined | null>()
+  const [price, setPrice] = useState<undefined | null | BigNumber>(new BigNumber(0))
   useEffect(() => {
     if (
       chainId &&
@@ -514,7 +520,8 @@ export function useETHPriceInUSD() {
         usdcTokenAddress,
         new BigNumber(usdcReserveETH.toString()),
         new BigNumber(usdcReserveToken.toString()),
-        6
+        // 6
+        18
       )
 
       const stablecoinReserves = [daiReservesObject, usdcReservesObject, tusdReservesObject]
@@ -526,6 +533,9 @@ export function useETHPriceInUSD() {
       }
     }
   }, [daiReserveETH, daiReserveToken, usdcReserveETH, usdcReserveToken, tusdReserveETH, tusdReserveToken, chainId])
-
+  // console.log('useETHPriceInUSD', price ? price.toString(10) : 0)
+  ethStablePrice = price
   return price
 }
+
+export let ethStablePrice:(undefined | null | BigNumber) = new BigNumber(0)
