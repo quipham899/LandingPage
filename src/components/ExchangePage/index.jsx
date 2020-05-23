@@ -403,6 +403,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         } else {
           setIndependentValueParsed(parsedValue)
           setIndependentError(null)
+          setWithArb(true)
         }
       } catch {
         setIndependentError(t('inputNotValid'))
@@ -799,13 +800,23 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             independentValueParsed,
             dependentValueMinumum,
             slippageParamValueMaximum,
-            false,
+            withArb,
             withCandy
           ]
         )
         if (oldData === newData) {
           return
         }
+        console.log(
+          'fetching',
+          outputCurrency,
+          inputCurrency,
+          independentValueParsed.toString(10),
+          dependentValueMinumum.toString(10),
+          slippageParamValueMaximum.toString(10),
+          withArb,
+          withCandy
+        )
         setOldData(newData)
 
         const paramData = ethers.utils.defaultAbiCoder.encode(
@@ -817,7 +828,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             dependentValueMinumum,
             slippageParamValueMaximum,
             deadline,
-            false,
+            withArb,
             withCandy
           ]
         )
@@ -837,6 +848,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
 
         try{
           const responseData = await provider.call(transaction)
+          console.log('responseData', responseData)
           returnVal = ethers.utils.defaultAbiCoder.decode(
             ['uint256', 'uint256', 'uint256'],
             responseData
@@ -851,7 +863,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         const outputAmount = returnVal[0]
         const leftProfit = returnVal[1]
         const numCandy = returnVal[0]
-        console.log(outputAmount.toString(10), leftProfit.toString(10), numCandy.toString(10))
+        console.log('parsed responseData', outputAmount.toString(10), leftProfit.toString(10), numCandy.toString(10))
         if (leftProfit.gt(0)) {
           setWithArb(true)
           setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
