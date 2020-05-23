@@ -83,6 +83,15 @@ export default function App() {
                           }
                         }}
                       />
+                      <Route
+                        path={[
+                          '/add-liquidity',
+                          '/remove-liquidity',
+                          '/create-exchange',
+                          '/create-exchange/:tokenAddress?'
+                        ]}
+                        component={() => <Pool params={params} />}
+                      />
                       <Redirect to="/swap" />
                     </Switch>
                   </Suspense>
