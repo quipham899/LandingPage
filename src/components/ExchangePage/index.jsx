@@ -759,7 +759,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     }
   }, [newOutputDetected, setShowOutputWarning])
 
-  const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  // const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const CANDYSTORE_ADDRESS = '0xC33c7f21c4437Ac07CA7458982a82Ab6c2d92c61'
   const CANDYARBER_ADDRESS = '0xA961740b0AF8C9d6aC8BF91f4B69948685765B41'
   const { library } = useWeb3React()
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
@@ -772,11 +773,11 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   useEffect(() => {
     async function fetchCandyPrice() {
       const openDraw = await candyStore.openDraw()
-      const lottery = await candyStore.lottery(openDraw)
+      const lottery = await candyStore.lottery(openDraw.toString(10))
       const price = new BigNumber(lottery.candyPrice.toString())
       dispatchSwapState({
         type: 'SET_CANDY_PRICE',
-        payload: { candyStablePrice: price }
+        payload: { candyStablePrice: price.div(DECIMAL_FACTOR) }
       })
     }
     fetchCandyPrice()
