@@ -654,7 +654,7 @@ export default function TransactionDetails(props) {
         <TotalCandy>
           Candy Price {' '}
           <ValueWrapper>
-            {b(`${props.candyTknPrice.dp(3)} ${props.inputSymbol}`)}
+            {b(`${props.candyTknPrice.dp(6)} ${props.inputSymbol}`)}
           </ValueWrapper>
           <SpaceTop>
             You are getting{' '}

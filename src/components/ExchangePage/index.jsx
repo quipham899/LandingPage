@@ -403,6 +403,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         } else {
           setIndependentValueParsed(parsedValue)
           setIndependentError(null)
+          setWithArb(true)
         }
       } catch {
         setIndependentError(t('inputNotValid'))
@@ -759,8 +760,10 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     }
   }, [newOutputDetected, setShowOutputWarning])
 
-  const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
-  const CANDYARBER_ADDRESS = '0xA961740b0AF8C9d6aC8BF91f4B69948685765B41'
+  // const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const CANDYSTORE_ADDRESS = '0xC33c7f21c4437Ac07CA7458982a82Ab6c2d92c61'
+  // const CANDYARBER_ADDRESS = '0xA961740b0AF8C9d6aC8BF91f4B69948685765B41'
+  const CANDYARBER_ADDRESS = '0x1fFE60121FEA10Cf57c8506332588dd309e72da0'
   const { library } = useWeb3React()
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
   const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
@@ -772,11 +775,11 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   useEffect(() => {
     async function fetchCandyPrice() {
       const openDraw = await candyStore.openDraw()
-      const lottery = await candyStore.lottery(openDraw)
+      const lottery = await candyStore.lottery(openDraw.toString(10))
       const price = new BigNumber(lottery.candyPrice.toString())
       dispatchSwapState({
         type: 'SET_CANDY_PRICE',
-        payload: { candyStablePrice: price }
+        payload: { candyStablePrice: price.div(DECIMAL_FACTOR) }
       })
     }
     fetchCandyPrice()
@@ -797,13 +800,23 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             independentValueParsed,
             dependentValueMinumum,
             slippageParamValueMaximum,
-            false,
+            withArb,
             withCandy
           ]
         )
         if (oldData === newData) {
           return
         }
+        console.log(
+          'fetching',
+          outputCurrency,
+          inputCurrency,
+          independentValueParsed.toString(10),
+          dependentValueMinumum.toString(10),
+          slippageParamValueMaximum.toString(10),
+          withArb,
+          withCandy
+        )
         setOldData(newData)
 
         const paramData = ethers.utils.defaultAbiCoder.encode(
@@ -815,7 +828,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             dependentValueMinumum,
             slippageParamValueMaximum,
             deadline,
-            false,
+            withArb,
             withCandy
           ]
         )
@@ -835,6 +848,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
 
         try{
           const responseData = await provider.call(transaction)
+          console.log('responseData', responseData)
           returnVal = ethers.utils.defaultAbiCoder.decode(
             ['uint256', 'uint256', 'uint256'],
             responseData
@@ -843,16 +857,20 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
           console.error(e)
         }
       } else {
-        console.log('fetchCandyStoreOutput else block')
+        
       }
       if (returnVal) {
-        if (returnVal[0].gt(0)) {
+        const outputAmount = returnVal[0]
+        const leftProfit = returnVal[1]
+        const numCandy = returnVal[0]
+        console.log('parsed responseData', outputAmount.toString(10), leftProfit.toString(10), numCandy.toString(10))
+        if (leftProfit.gt(0)) {
           setWithArb(true)
-          setCandyCount(returnVal[2])
+          setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
         } else {
           setWithArb(false)
           if (withCandy) {
-            setCandyCount(returnVal[2])
+            setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
           }
         }
       }
@@ -934,10 +952,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       <OversizedPanel>
         <DownArrowBackground>
           <DownArrow
-            onClick={() => {
-              dispatchSwapState({ type: 'FLIP_INDEPENDENT' })
-            }}
-            clickable
             alt="swap"
             active={isValid}
           />
@@ -965,6 +979,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         value={outputValueFormatted}
         errorMessage={independentField === OUTPUT ? independentError : ''}
         disableUnlock
+        disabled
       />
       {sending ? (
         <>
