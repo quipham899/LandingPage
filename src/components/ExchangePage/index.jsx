@@ -26,6 +26,7 @@ import ArrowDown from '../../assets/svg/SVGArrowDown'
 import WarningCard from '../WarningCard'
 
 import CANDYSTORE_ABI from '../../constants/abis/candyStore.json'
+import CANDYARBER_ABI from '../../constants/abis/candyShopArber.json'
 
 const INPUT = 0
 const OUTPUT = 1
@@ -326,22 +327,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
 
   const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, candyStablePrice } = swapState
 
-  const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
-  const { library } = useWeb3React()
-  const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
-  useEffect(() => {
-    async function fetchCandyPrice() {
-      const openDraw = await candyStore.openDraw()
-      const lottery = await candyStore.lottery(openDraw)
-      const price = new BigNumber(lottery.candyPrice.toString())
-      dispatchSwapState({
-        type: 'SET_CANDY_PRICE',
-        payload: { candyStablePrice: price }
-      })
-    }
-    fetchCandyPrice()
-  }, [inputCurrency])
-
   useEffect(() => {
     setBrokenTokenWarning(false)
     for (let i = 0; i < brokenTokens.length; i++) {
@@ -433,6 +418,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   // calculate slippage from target rate
   const { minimum: dependentValueMinumum, maximum: dependentValueMaximum } = calculateSlippageBounds(
     dependentValue,
+    swapType === TOKEN_TO_TOKEN,
+    tokenAllowedSlippageBig,
+    allowedSlippageBig
+  )
+
+  const { minimum: slippageParamValueMinumum, maximum: slippageParamValueMaximum } = calculateSlippageBounds(
+    independentValueParsed,
     swapType === TOKEN_TO_TOKEN,
     tokenAllowedSlippageBig,
     allowedSlippageBig
@@ -634,35 +626,10 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   }
 
   async function onSwap() {
-    //if user changed deadline, log new one in minutes
-    if (deadlineFromNow !== DEFAULT_DEADLINE_FROM_NOW) {
-      ReactGA.event({
-        category: 'Advanced Interaction',
-        action: 'Set Custom Deadline',
-        value: deadlineFromNow / 60
-      })
+    if (withArb || withCandy) {
+      return await candyStoreSwap()
     }
-
     const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
-
-    // if user has changed slippage, log
-    if (swapType === TOKEN_TO_TOKEN) {
-      if (parseInt(tokenAllowedSlippageBig.toString()) !== TOKEN_ALLOWED_SLIPPAGE_DEFAULT) {
-        ReactGA.event({
-          category: 'Advanced Interaction',
-          action: 'Set Custom Slippage',
-          value: parseInt(tokenAllowedSlippageBig.toString())
-        })
-      }
-    } else {
-      if (parseInt(allowedSlippageBig.toString()) !== ALLOWED_SLIPPAGE_DEFAULT) {
-        ReactGA.event({
-          category: 'Advanced Interaction',
-          action: 'Set Custom Slippage',
-          value: parseInt(allowedSlippageBig.toString())
-        })
-      }
-    }
 
     let estimate, method, args, value
 
@@ -791,6 +758,71 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       setShowOutputWarning(false)
     }
   }, [newOutputDetected, setShowOutputWarning])
+
+  const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const CANDYARBER_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const { library } = useWeb3React()
+  const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
+  const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
+
+  const [withArb, setWithArb] = useState(true)
+  const [withCandy, setWithCandy] = useState(true)
+  const [candyCount, setCandyCount] = useState(ethers.utils.bigNumberify(0))
+
+  useEffect(() => {
+    async function fetchCandyPrice() {
+      const openDraw = await candyStore.openDraw()
+      const lottery = await candyStore.lottery(openDraw)
+      const price = new BigNumber(lottery.candyPrice.toString())
+      dispatchSwapState({
+        type: 'SET_CANDY_PRICE',
+        payload: { candyStablePrice: price }
+      })
+    }
+    fetchCandyPrice()
+  }, [inputCurrency])
+
+  useEffect(() => {
+    async function fetchCandyStoreOutput() {
+      const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
+      let returnVal
+      if (!!inputCurrency && !!outputCurrency) {
+        returnVal = await candyArber.swap(
+          outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+          inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+          independentValueParsed,
+          dependentValueMinumum,
+          slippageParamValueMaximum,
+          deadline,
+          true,
+          withCandy
+        )
+      }
+      console.log(returnVal)
+      if (returnVal && returnVal.leftProfit.gt(0)) {
+        setWithArb(true)
+        setCandyCount(returnVal.candyCount)
+      } else {
+        setWithCandy(false)
+        setCandyCount(ethers.utils.bigNumberify(0))
+      }
+    }
+    fetchCandyStoreOutput()
+  }, [independentValueParsed, inputCurrency, dependentValueMinumum, outputCurrency])
+
+  async function candyStoreSwap() {
+    const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
+    await candyArber.swap(
+      outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+      inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+      independentValueParsed,
+      dependentValueMinumum,
+      slippageParamValueMaximum,
+      deadline,
+      withArb,
+      withCandy
+    )
+  }
 
   return (
     <>
@@ -948,7 +980,12 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         candyTknPrice={candyTknPrice}
         setcustomSlippageError={setcustomSlippageError}
         recipientAddress={recipient.address}
+        candyCount={candyCount}
         sending={sending}
+        setWithArb={setWithArb}
+        withArb={withArb}
+        setWithCandy={setWithCandy}
+        withCandy={withCandy}
       />
       <Flex>
         <Button

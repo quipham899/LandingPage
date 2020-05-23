@@ -15,6 +15,11 @@
         "internalType": "address",
         "name": "router",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_governance",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -26,16 +31,6 @@
         "internalType": "address",
         "name": "token",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount0",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount1",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -51,10 +46,31 @@
         "internalType": "uint256",
         "name": "slippageParam",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "WithArb",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "withCandy",
+        "type": "bool"
       }
     ],
     "name": "EthToTokenSwap",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "payable",
     "type": "function"
   },
@@ -72,12 +88,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "minEth",
+        "name": "deadline",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "deadline",
+        "name": "minEth",
         "type": "uint256"
       },
       {
@@ -86,19 +102,54 @@
         "type": "uint256"
       },
       {
+        "internalType": "bool",
+        "name": "WithArb",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "withCandy",
+        "type": "bool"
+      }
+    ],
+    "name": "TokenToEthSwap",
+    "outputs": [
+      {
         "internalType": "uint256",
-        "name": "amount0",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "amount1",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "TokenToEthSwap",
-    "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "IsDirectionETHToToken",
+        "type": "bool"
+      }
+    ],
+    "name": "calculateAmountForArbitrage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -141,51 +192,80 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "governance",
+    "outputs": [
+      {
+        "internalType": "contract GovernanceInterface",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenA",
+        "name": "buyAddr",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenB",
+        "name": "sellAddr",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "truePriceTokenA",
+        "name": "sellAmt",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "truePriceTokenB",
+        "name": "minBuyAmt",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "maxSpendTokenA",
+        "name": "slippage",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maxSpendTokenB",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
       },
       {
         "internalType": "uint256",
         "name": "deadline",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "WithArb",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "withCandy",
+        "type": "bool"
       }
     ],
-    "name": "swapToPrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "swap",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numEthObtained",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "leftProfit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "candyCount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
     "type": "function"
   },
   {

@@ -203,6 +203,45 @@ const Input = styled.input`
       color: ${({ theme }) => theme.salmonRed};
     `}
 `
+const Checkbox = styled.input`
+  background: ${({ theme }) => theme.inputBackground};
+  flex-grow: 1;
+  font-size: 12px;
+  max-width: 20px;
+
+  outline: none;
+  box-sizing: border-box;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  cursor: inherit;
+
+  color: ${({ theme }) => theme.doveGray};
+  text-align: left;
+  ${({ active }) =>
+    active &&
+    css`
+      color: initial;
+      cursor: initial;
+      text-align: right;
+    `}
+
+  ${({ placeholder }) =>
+    placeholder !== 'Custom' &&
+    css`
+      text-align: right;
+      color: ${({ theme }) => theme.textColor};
+    `}
+
+  ${({ color }) =>
+    color === 'red' &&
+    css`
+      color: ${({ theme }) => theme.salmonRed};
+    `}
+`
 
 const BottomError = styled.div`
   ${({ show }) =>
@@ -341,7 +380,6 @@ export default function TransactionDetails(props) {
   })
 
   const [deadlineInput, setDeadlineInput] = useState('')
-  const [candyInput, setCandyInput] = useState(0)
 
   function renderSummary() {
     let contextualInfo = ''
@@ -398,12 +436,12 @@ export default function TransactionDetails(props) {
   const dropDownContent = () => {
     return (
       <>
-        <SlippageComparator>
+        {/* <SlippageComparator>
             {t('candyshopPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)} </ValueWrapper>
           <SpaceTop>
             {t('uniswapPriceChange')} <ValueWrapper>{b(`${props.percentSlippageFormatted}%`)}</ValueWrapper>
           </SpaceTop>
-        </SlippageComparator>
+        </SlippageComparator> */}
         <SlippageSelector>
           <SlippageRow>
             Limit additional price slippage
@@ -583,7 +621,7 @@ export default function TransactionDetails(props) {
         </AmountAfterMaxSlippage>
         <CandySelector>
           <CandyRow>
-            Number of candies to buy
+            Buy Candies
             {/* <QuestionWrapper
               onClick={() => {
                 setCandyPopup(!showCandyPopup)
@@ -608,9 +646,7 @@ export default function TransactionDetails(props) {
             )} */}
           </CandyRow>
           <CandyRow wrap>
-            <CandyInput>
-              <Input placeholder={'Candies'} value={candyInput} onChange={parseCandyInput} />
-            </CandyInput>{' '}
+              <Checkbox type="checkbox" placeholder={'Candies'} checked={props.withCandy} value={props.withCandy} onChange={parseCandyInput} />{' '}
             {/* x {props.candyTknPrice}{' '} = {' '}{b(candyInput * props.candyTknPrice)} */}
 
           </CandyRow>
@@ -621,37 +657,27 @@ export default function TransactionDetails(props) {
             {b(`${props.candyTknPrice.dp(3)} ${props.inputSymbol}`)}
           </ValueWrapper>
           <SpaceTop>
-            You are buying{' '}
+            You are getting{' '}
             <ValueWrapper>
               {b(
                 `${amountFormatter(
-                  ethers.utils.bigNumberify(candyInput),
+                  props.candyCount,
                   0,
                   0
                 )}`
               )}
             </ValueWrapper>{' '}
-            and getting{' '}
-            <ValueWrapper>
-              {b(
-                `${amountFormatter(
-                  ethers.utils.bigNumberify(3),
-                  0,
-                  0
-                )}`
-              )}
-            </ValueWrapper>{' '}
-            free Candies.
+            Candies for doing this trade.
           </SpaceTop>
         </TotalCandy>
-        {/* <DeadlineSelector>
+        <DeadlineSelector>
           Set swap deadline (minutes from now)
           <DeadlineRow wrap>
             <DeadlineInput>
               <Input placeholder={'Deadline'} value={deadlineInput} onChange={parseDeadlineInput} />
             </DeadlineInput>
           </DeadlineRow>
-        </DeadlineSelector> */}
+        </DeadlineSelector>
       </>
     )
   }
@@ -780,13 +806,8 @@ export default function TransactionDetails(props) {
       setDeadline(parseInt(input) * 60)
     }
   }
-  const parseCandyInput = e => {
-    const input = e.target.value || 0
-
-    const acceptableValues = [/^$/, /^\d+$/]
-    if (acceptableValues.some(re => re.test(input))) {
-      setCandyInput(input)
-    }
+  const parseCandyInput = async(e) => {
+    props.setWithCandy(!props.withCandy)
   }
 
   const b = text => <Bold>{text}</Bold>
