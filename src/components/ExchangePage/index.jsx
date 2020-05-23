@@ -760,7 +760,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   }, [newOutputDetected, setShowOutputWarning])
 
   const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
-  const CANDYARBER_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
+  const CANDYARBER_ADDRESS = '0xA961740b0AF8C9d6aC8BF91f4B69948685765B41'
   const { library } = useWeb3React()
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
   const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
@@ -782,33 +782,83 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     fetchCandyPrice()
   }, [inputCurrency])
 
+  let [oldData, setOldData] = useState()
   useEffect(() => {
     async function fetchCandyStoreOutput() {
       const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
       let returnVal
-      if (!!inputCurrency && !!outputCurrency) {
-        returnVal = await candyArber.swap(
-          outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-          inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
-          independentValueParsed,
-          dependentValueMinumum,
-          slippageParamValueMaximum,
-          deadline,
-          true,
-          withCandy
+      if (!!inputCurrency && !!outputCurrency && !!independentValueParsed && !!dependentValueMinumum && !!slippageParamValueMaximum) {
+        // check cached data
+        const newData = ethers.utils.defaultAbiCoder.encode(
+          ['address', 'address', 'uint', 'uint', 'uint', 'bool', 'bool'],
+          [
+            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+            independentValueParsed,
+            dependentValueMinumum,
+            slippageParamValueMaximum,
+            false,
+            withCandy
+          ]
         )
-      }
-      console.log(returnVal)
-      if (returnVal && returnVal.leftProfit.gt(0)) {
-        setWithArb(true)
-        setCandyCount(returnVal.candyCount)
+        if (oldData === newData) {
+          return
+        }
+        setOldData(newData)
+
+        const paramData = ethers.utils.defaultAbiCoder.encode(
+          ['address', 'address', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool'],
+          [
+            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+            independentValueParsed,
+            dependentValueMinumum,
+            slippageParamValueMaximum,
+            deadline,
+            false,
+            withCandy
+          ]
+        )
+
+        const sigData = ethers.utils.keccak256(
+          ethers.utils.toUtf8Bytes(
+            candyArber.interface.functions.swap.signature
+          )
+        ).slice(0, 10)
+
+        const provider = ethers.getDefaultProvider('ropsten');
+        const transaction = {
+          to: CANDYARBER_ADDRESS,
+          data: sigData + paramData.slice(2),
+          value: inputCurrency === ETH ? independentValueParsed.toString(10) : 0
+        }
+
+        try{
+          const responseData = await provider.call(transaction)
+          returnVal = ethers.utils.defaultAbiCoder.decode(
+            ['uint256', 'uint256', 'uint256'],
+            responseData
+          )
+        } catch (e) {
+          console.error(e)
+        }
       } else {
-        setWithCandy(false)
-        setCandyCount(ethers.utils.bigNumberify(0))
+        console.log('fetchCandyStoreOutput else block')
+      }
+      if (returnVal) {
+        if (returnVal[0].gt(0)) {
+          setWithArb(true)
+          setCandyCount(returnVal[2])
+        } else {
+          setWithArb(false)
+          if (withCandy) {
+            setCandyCount(returnVal[2])
+          }
+        }
       }
     }
     fetchCandyStoreOutput()
-  }, [independentValueParsed, inputCurrency, dependentValueMinumum, outputCurrency])
+  }, [independentValueParsed, inputCurrency, outputCurrency, dependentValueMinumum])
 
   async function candyStoreSwap() {
     const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
