@@ -290,7 +290,8 @@ export default function CurrencyInputPanel({
   showUnlock,
   value,
   urlAddedTokens,
-  hideETH = false
+  hideETH = false,
+  disabled = false
 }) {
   const { t } = useTranslation()
 
@@ -375,6 +376,7 @@ export default function CurrencyInputPanel({
             }
           }}
           value={value}
+          disabled={disabled}
         />
         {renderUnlockButton()}
         <CurrencySelect

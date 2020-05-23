@@ -935,10 +935,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       <OversizedPanel>
         <DownArrowBackground>
           <DownArrow
-            onClick={() => {
-              dispatchSwapState({ type: 'FLIP_INDEPENDENT' })
-            }}
-            clickable
             alt="swap"
             active={isValid}
           />
@@ -966,6 +962,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         value={outputValueFormatted}
         errorMessage={independentField === OUTPUT ? independentError : ''}
         disableUnlock
+        disabled
       />
       {sending ? (
         <>
