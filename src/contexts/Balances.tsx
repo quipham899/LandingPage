@@ -18,6 +18,8 @@ import { useBlockNumber } from './Application'
 import { useTokenDetails, useAllTokenDetails } from './Tokens'
 import { getUSDPrice } from '../utils/price'
 
+import * as constants from '../constants'
+
 const LOCAL_STORAGE_KEY = 'BALANCES'
 const SHORT_BLOCK_TIMEOUT = (60 * 2) / 15 // in seconds, represented as a block number delta
 const LONG_BLOCK_TIMEOUT = (60 * 15) / 15 // in seconds, represented as a block number delta
@@ -474,12 +476,12 @@ const buildReserveObject = (
 // const usdcExchangeAddress = '0x97deC872013f6B5fB443861090ad931542878126'
 // const tusdTokenAddress = '0x0000000000085d4780B73119b644AE5ecd22b376'
 // const tusdExchangeAddress = '0x5048b9d01097498Fd72F3F14bC9Bc74A5aAc8fA7'
-const daiTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
-const daiExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
-const usdcTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
-const usdcExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
-const tusdTokenAddress = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
-const tusdExchangeAddress = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
+const daiTokenAddress = constants.ropstenDAI
+const daiExchangeAddress = constants.ropstenDAIExchange
+const usdcTokenAddress = constants.ropstenDAI
+const usdcExchangeAddress = constants.ropstenDAIExchange
+const tusdTokenAddress = constants.ropstenDAI
+const tusdExchangeAddress = constants.ropstenDAIExchange
 export function useETHPriceInUSD() {
   const { chainId } = useWeb3React()
 

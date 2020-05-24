@@ -6,7 +6,7 @@ import CurrencyInputPanel from '../../components/CurrencyInputPanel'
 import styled from 'styled-components'
 import { Button } from '../../theme'
 // import { ethers } from 'ethers'
-
+import * as constants from '../../constants'
 
 export default function Lottery({ params }) {
   // const { library, account, active, chainId } = useWeb3React()
@@ -41,7 +41,7 @@ export default function Lottery({ params }) {
 
   const [sponsorValue, setSponsorValue] = useState()
 
-  const inputCurrency = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
+  const inputCurrency = constants.ropstenDAI
   // const inputBalance = useAddressBalance(account, inputCurrency)
 
   function onSponsor() {

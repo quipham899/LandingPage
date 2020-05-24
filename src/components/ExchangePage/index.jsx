@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { BigNumber } from '@uniswap/sdk'
 
 import { useWeb3React } from '../../hooks'
-import { brokenTokens } from '../../constants'
+import { brokenTokens, CANDYSTORE_ADDRESS, CANDYARBER_ADDRESS } from '../../constants'
 import { amountFormatter, calculateGasMargin, isAddress, getContract } from '../../utils'
 
 import { useExchangeContract } from '../../hooks'
@@ -760,10 +760,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     }
   }, [newOutputDetected, setShowOutputWarning])
 
-  // const CANDYSTORE_ADDRESS = '0x1B29143F78995782E6DE2dA7468454C2F42e3Fb2'
-  const CANDYSTORE_ADDRESS = '0xC33c7f21c4437Ac07CA7458982a82Ab6c2d92c61'
-  // const CANDYARBER_ADDRESS = '0xA961740b0AF8C9d6aC8BF91f4B69948685765B41'
-  const CANDYARBER_ADDRESS = '0x1fFE60121FEA10Cf57c8506332588dd309e72da0'
   const { library } = useWeb3React()
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
   const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
