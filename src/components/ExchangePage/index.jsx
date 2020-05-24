@@ -29,6 +29,8 @@ import WarningCard from '../WarningCard'
 import CANDYSTORE_ABI from '../../constants/abis/candyStore.json'
 import CANDYARBER_ABI from '../../constants/abis/candyShopArber.json'
 
+import Web3 from 'web3'
+
 const INPUT = 0
 const OUTPUT = 1
 const ETH = 'ETH'
@@ -827,20 +829,36 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         setOldData(newData)
 
         try {
-          const provider = ethers2.getDefaultProvider('ropsten')
-          const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
-          console.log('static call here', candyArberV5.staticCall)
-          // TODO figure out how to send value with this call or create a function without payable
-          let response = await candyArberV5.callStatic.swap(
-            outputCurrency,
-            inputCurrency,
+          const web3 = new Web3('https://ropsten.infura.io/v3/73d0b3b9a4b2499da81c71a2b2a473a9')
+          const contract = new web3.eth.Contract(CANDYARBER_ABI, CANDYARBER_ADDRESS)
+          const response = await contract.methods.swap(
+            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
             independentValueParsed,
             dependentValueMinumum,
             slippageParamValueMaximum,
             deadline,
             withArb,
             withCandy
-          )
+          ).call({
+            from: account,
+            value: inputCurrency === ETH ? independentValueParsed : 0
+          })
+          // const provider = ethers2.getDefaultProvider('ropsten')
+          
+          // const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
+          // console.log('static call here', candyArberV5.staticCall)
+          // TODO figure out how to send value with this call or create a function without payable
+          // let response = await candyArberV5.callStatic.swap(
+          //   outputCurrency,
+          //   inputCurrency,
+          //   independentValueParsed,
+          //   dependentValueMinumum,
+          //   slippageParamValueMaximum,
+          //   deadline,
+          //   withArb,
+          //   withCandy
+          // )
           console.log('response from eth_call', response)
         } catch (e) {
           console.error(e)
