@@ -37,10 +37,10 @@ const DECIMAL_FACTOR = TEN.pow(18)
 
 let fetched = false
 export default function Lottery({ params }) {
-  const [candiesOwned, setCandiesOwned] = useState(22)
+  const [candiesOwned, setCandiesOwned] = useState(0)
   const [candyPrice, setCandyPrice] = useState(0)
-  const [drawPoolSize, setDrawPoolSize] = useState(333)
-  const [committedPoolSize, setCommittedPoolSize] = useState(420)
+  const [drawPoolSize, setDrawPoolSize] = useState(0)
+  const [committedPoolSize, setCommittedPoolSize] = useState(0)
   const [sponsorValue, setSponsorValue] = useState()
   const [openDraw, setOpenDraw] = useState(0)
 
@@ -63,12 +63,15 @@ export default function Lottery({ params }) {
     async function fetchDetails() {
       const lottery = await candyStore.lottery(openDraw.toString(10))
       const price = new BigNumber(lottery.candyPrice.toString())
-      setCandyPrice(price.div(DECIMAL_FACTOR))
       const drawPoolSize = lottery.candyPrice.mul(lottery.totalCandy)
-      setDrawPoolSize(drawPoolSize)
+      const candiesOwned = await candyStore.lotteryTickets(openDraw, account)
 
       const committedLottery = await candyStore.lottery((openDraw-1).toString(10))
       const committedPoolSize = committedLottery.candyPrice.mul(committedLottery.totalCandy)
+
+      setCandiesOwned(candiesOwned)
+      setCandyPrice(price.div(DECIMAL_FACTOR))
+      setDrawPoolSize(drawPoolSize)
       setCommittedPoolSize(committedPoolSize)
     }
     fetchDetails()
@@ -92,7 +95,7 @@ export default function Lottery({ params }) {
         <Col>
           <CurrencyInputPanel
             title="Candies Owned"
-            value={openDraw}
+            value={candiesOwned}
             disabled
             hideTokenSelect
           />
