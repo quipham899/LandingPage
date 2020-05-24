@@ -51,7 +51,7 @@ export default function Lottery({ params }) {
   const { library, account, active, chainId } = useWeb3React()
   const inputCurrency = constants.ropstenDAI
   const allowance = useAddressAllowance(account, inputCurrency, constants.CANDYSTORE_ADDRESS)
-  const candyStore = getContract(constants.CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
+  const candyStore = getContract(constants.CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library, account)
   // const candyArber = getContract(constants.CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
 
   useEffect(() => {
@@ -109,8 +109,18 @@ export default function Lottery({ params }) {
     }
   }, [sponsorValue, allowance])
 
-  function onSponsor() {
-    console.log(allowance, sponsorValue)
+  async function onSponsor() {
+    try {
+      await candyStore.depositSponsor(
+        inputCurrency,
+        ethers.utils.bigNumberify(sponsorValue)
+          .mul(ethers.utils.bigNumberify(10)
+            .pow(ethers.utils.bigNumberify(18))
+          )
+      )
+    } catch (e) {
+      console.error('Error while sending transaction', e)
+    }
   }
 
   return (
