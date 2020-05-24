@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import CurrencyInputPanel from '../../components/CurrencyInputPanel'
-// import { useAddressBalance, useExchangeReserves } from '../../contexts/Balances'
+import { useAddressBalance, useExchangeReserves } from '../../contexts/Balances'
+import { useAddressAllowance } from '../../contexts/Allowances'
 import { useWeb3React } from '../../hooks'
 // import { amountFormatter, calculateGasMargin } from '../../utils'
 import styled from 'styled-components'
@@ -41,13 +42,17 @@ export default function Lottery({ params }) {
   const [candyPrice, setCandyPrice] = useState(0)
   const [drawPoolSize, setDrawPoolSize] = useState(0)
   const [committedPoolSize, setCommittedPoolSize] = useState(0)
-  const [sponsorValue, setSponsorValue] = useState()
+  const [sponsorValue, setSponsorValue] = useState('')
   const [openDraw, setOpenDraw] = useState(0)
+  const [outputError, setOutputError] = useState()
+  const [showUnlock, setShowUnlock] = useState(false)
 
-  const inputCurrency = constants.ropstenDAI
+
   const { library, account, active, chainId } = useWeb3React()
+  const inputCurrency = constants.ropstenDAI
+  const allowance = useAddressAllowance(account, inputCurrency, constants.CANDYSTORE_ADDRESS)
   const candyStore = getContract(constants.CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
-  const candyArber = getContract(constants.CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
+  // const candyArber = getContract(constants.CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
 
   useEffect(() => {
     async function fetchOpenDraw() {
@@ -61,12 +66,14 @@ export default function Lottery({ params }) {
 
   useEffect(() => {
     async function fetchDetails() {
-      const lottery = await candyStore.lottery(openDraw.toString(10))
-      const price = new BigNumber(lottery.candyPrice.toString())
-      const drawPoolSize = lottery.candyPrice.mul(lottery.totalCandy)
-      const candiesOwned = await candyStore.lotteryTickets(openDraw, account)
+      const [drawLottery, committedLottery, candiesOwned] = await Promise.all([
+        candyStore.lottery(openDraw.toString(10)),
+        candyStore.lottery((openDraw-1).toString(10)),
+        candyStore.lotteryTickets(openDraw, account),
+      ])
 
-      const committedLottery = await candyStore.lottery((openDraw-1).toString(10))
+      const price = new BigNumber(drawLottery.candyPrice.toString())
+      const drawPoolSize = drawLottery.candyPrice.mul(drawLottery.totalCandy)
       const committedPoolSize = committedLottery.candyPrice.mul(committedLottery.totalCandy)
 
       setCandiesOwned(candiesOwned)
@@ -77,17 +84,34 @@ export default function Lottery({ params }) {
     fetchDetails()
   }, [openDraw])
 
-  // const inputBalance = useAddressBalance(account, inputCurrency)
+  const inputBalance = useAddressBalance(account, inputCurrency)
 
-  // function formatBalance(value) {
-  //   return `Balance: ${value}`
-  // }
-
-  function onSponsor() {
-
+  function formatBalance(value) {
+    return `Balance: ${value}`
   }
 
+  function onSponsorValueUpdate(newValue) {
+    if (!sponsorValue || sponsorValue.toString(10) !== newValue.toString(10)) {
+      setSponsorValue(newValue)
+    }
+  }
 
+  useEffect(() => {
+    if (sponsorValue && allowance) {
+      if (allowance.lt(sponsorValue)) {
+        setOutputError('Unlock')
+        setShowUnlock(true)
+      }
+      return () => {
+        setOutputError()
+        setShowUnlock(false)
+      }
+    }
+  }, [sponsorValue, allowance])
+
+  function onSponsor() {
+    console.log(allowance, sponsorValue)
+  }
 
   return (
     <div>
@@ -136,6 +160,10 @@ export default function Lottery({ params }) {
           value={sponsorValue}
           selectedTokenAddress={inputCurrency}
           disableTokenSelect
+          extraText={inputBalance && formatBalance(amountFormatter(inputBalance, 18, 4))}
+          onValueChange={onSponsorValueUpdate}
+          showUnlock={showUnlock}
+          sponsor={true}
         />
       </Row>
         <Flex>

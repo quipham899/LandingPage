@@ -25,6 +25,7 @@ import { transparentize } from 'polished'
 import { Spinner } from '../../theme'
 import Circle from '../../assets/images/circle-grey.svg'
 import { useETHPriceInUSD, useAllBalances } from '../../contexts/Balances'
+import * as constants from '../../constants'
 
 const GAS_MARGIN = ethers.utils.bigNumberify(1000)
 
@@ -294,7 +295,8 @@ export default function CurrencyInputPanel({
   hideETH = false,
   disabled = false,
   hideTokenSelect = false,
-  rightText = ''
+  rightText = '',
+  sponsor = false
 }) {
   const { t } = useTranslation()
 
@@ -324,18 +326,24 @@ export default function CurrencyInputPanel({
               let estimatedGas
               let useUserBalance = false
               estimatedGas = await tokenContract.estimate
-                .approve(selectedTokenExchangeAddress, ethers.constants.MaxUint256)
+                .approve(
+                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
+                  ethers.constants.MaxUint256
+                )
                 .catch(e => {
                   console.log('Error setting max token approval.')
                 })
               if (!estimatedGas) {
                 // general fallback for tokens who restrict approval amounts
-                estimatedGas = await tokenContract.estimate.approve(selectedTokenExchangeAddress, userTokenBalance)
+                estimatedGas = await tokenContract.estimate.approve(
+                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
+                  userTokenBalance
+                )
                 useUserBalance = true
               }
               tokenContract
                 .approve(
-                  selectedTokenExchangeAddress,
+                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
                   useUserBalance ? userTokenBalance : ethers.constants.MaxUint256,
                   {
                     gasLimit: calculateGasMargin(estimatedGas, GAS_MARGIN)
