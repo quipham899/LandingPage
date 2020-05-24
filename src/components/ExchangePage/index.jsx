@@ -399,6 +399,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const outputValueParsed = independentField === OUTPUT ? independentValueParsed : dependentValue
   const outputValueFormatted = independentField === OUTPUT ? independentValue : dependentValueFormatted
 
+  const { exchangeAddress } = useTokenDetails(inputCurrency === ETH ? outputCurrency : inputCurrency)
+  const inputExchangeBalance = useAddressBalance(exchangeAddress, inputCurrency)
   // validate + parse independent value
   const [independentError, setIndependentError] = useState()
   useEffect(() => {
@@ -411,7 +413,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         } else {
           setIndependentValueParsed(parsedValue)
           setIndependentError(null)
-          setWithArb(true)
+          if (parsedValue.gt(inputExchangeBalance.div(10))) {
+            console.log('true')
+            setWithArb(true)
+          } else {
+            console.log('false')
+            setWithArb(false)
+          }
         }
       } catch {
         setIndependentError(t('inputNotValid'))
