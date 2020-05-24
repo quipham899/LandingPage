@@ -6,6 +6,7 @@ import ERC20_ABI from '../constants/abis/erc20'
 import ERC20_BYTES32_ABI from '../constants/abis/erc20_bytes32'
 import { FACTORY_ADDRESSES, SUPPORTED_THEMES } from '../constants'
 import { formatFixed } from '@uniswap/sdk'
+import { ethers as ethers2 } from 'ethers-next'
 
 import UncheckedJsonRpcSigner from './signer'
 
@@ -170,6 +171,15 @@ export function getContract(address, ABI, library, account) {
   }
 
   return new ethers.Contract(address, ABI, getProviderOrSigner(library, account))
+}
+
+// account is optional
+export function getContractV5(address, ABI, provider) {
+  if (!isAddress(address) || address === ethers.constants.AddressZero) {
+    throw Error(`Invalid 'address' parameter '${address}'.`)
+  }
+
+  return new ethers2.Contract(address, ABI, provider)
 }
 
 // account is optional

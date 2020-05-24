@@ -5,10 +5,11 @@ import { ethers } from 'ethers'
 import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
 import { BigNumber } from '@uniswap/sdk'
+import { ethers as ethers2 } from 'ethers-next'
 
 import { useWeb3React } from '../../hooks'
 import { brokenTokens, CANDYSTORE_ADDRESS, CANDYARBER_ADDRESS } from '../../constants'
-import { amountFormatter, calculateGasMargin, isAddress, getContract } from '../../utils'
+import { amountFormatter, calculateGasMargin, isAddress, getContract, getContractV5 } from '../../utils'
 
 import { useExchangeContract } from '../../hooks'
 import { useTokenDetails, INITIAL_TOKENS_CONTEXT } from '../../contexts/Tokens'
@@ -169,8 +170,8 @@ function swapStateReducer(state, action) {
       const { inputCurrency, outputCurrency } = state
       const { field, currency } = action.payload
 
-      const newInputCurrency = field === INPUT ? currency : (currency !== ETH ? ETH : inputCurrency)
-      const newOutputCurrency = field === OUTPUT ? currency : (currency !== ETH ? ETH : outputCurrency)
+      const newInputCurrency = field === INPUT ? currency : currency !== ETH ? ETH : inputCurrency
+      const newOutputCurrency = field === OUTPUT ? currency : currency !== ETH ? ETH : outputCurrency
 
       if (newInputCurrency === newOutputCurrency) {
         return {
@@ -259,8 +260,6 @@ function getMarketRate(
   }
 }
 
-
-
 export default function ExchangePage({ initialCurrency, sending = false, params }) {
   const { t } = useTranslation()
   const { library, account, chainId, error } = useWeb3React()
@@ -325,7 +324,14 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     getInitialSwapState
   )
 
-  const { independentValue, dependentValue, independentField, inputCurrency, outputCurrency, candyStablePrice } = swapState
+  const {
+    independentValue,
+    dependentValue,
+    independentField,
+    inputCurrency,
+    outputCurrency,
+    candyStablePrice
+  } = swapState
 
   useEffect(() => {
     setBrokenTokenWarning(false)
@@ -615,7 +621,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   function formatBalance(value) {
     return `Balance: ${value}`
   }
-  
+
   let candyEthPrice
   let candyTknPrice
   const TEN = new BigNumber(10)
@@ -785,7 +791,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     async function fetchCandyStoreOutput() {
       const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
       let returnVal
-      if (!!inputCurrency && !!outputCurrency && !!independentValueParsed && !!dependentValueMinumum && !!slippageParamValueMaximum) {
+      if (
+        !!inputCurrency &&
+        !!outputCurrency &&
+        !!independentValueParsed &&
+        !!dependentValueMinumum &&
+        !!slippageParamValueMaximum
+      ) {
         // check cached data
         const newData = ethers.utils.defaultAbiCoder.encode(
           ['address', 'address', 'uint', 'uint', 'uint', 'bool', 'bool'],
@@ -814,45 +826,29 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         )
         setOldData(newData)
 
-        const paramData = ethers.utils.defaultAbiCoder.encode(
-          ['address', 'address', 'uint', 'uint', 'uint', 'uint', 'bool', 'bool'],
-          [
-            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+        try {
+          const provider = ethers2.getDefaultProvider('ropsten')
+          const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
+          console.log('contract', candyArberV5)
+          console.log('staic call', candyArberV5.functions.swap)
+
+          console.log('static call here', candyArberV5.staticCall)
+          let response = await candyArberV5.callStatic.swap(
+            outputCurrency,
+            inputCurrency,
             independentValueParsed,
             dependentValueMinumum,
             slippageParamValueMaximum,
             deadline,
             withArb,
             withCandy
-          ]
-        )
-
-        const sigData = ethers.utils.keccak256(
-          ethers.utils.toUtf8Bytes(
-            candyArber.interface.functions.swap.signature
           )
-        ).slice(0, 10)
 
-        const provider = ethers.getDefaultProvider('ropsten');
-        const transaction = {
-          to: CANDYARBER_ADDRESS,
-          data: sigData + paramData.slice(2),
-          value: inputCurrency === ETH ? independentValueParsed.toString(10) : 0
-        }
-
-        try{
-          const responseData = await provider.call(transaction)
-          console.log('responseData', responseData)
-          returnVal = ethers.utils.defaultAbiCoder.decode(
-            ['uint256', 'uint256', 'uint256'],
-            responseData
-          )
+          console.log('response from eth_call', response)
         } catch (e) {
           console.error(e)
         }
       } else {
-        
       }
       if (returnVal) {
         const outputAmount = returnVal[0]
@@ -946,10 +942,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       />
       <OversizedPanel>
         <DownArrowBackground>
-          <DownArrow
-            alt="swap"
-            active={isValid}
-          />
+          <DownArrow alt="swap" active={isValid} />
         </DownArrowBackground>
       </OversizedPanel>
       <CurrencyInputPanel
