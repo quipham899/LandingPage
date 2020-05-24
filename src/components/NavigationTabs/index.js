@@ -22,7 +22,7 @@ const tabOrder = [
   },
   {
     path: '/lottery',
-    textKey: 'lottery',
+    textKey: 'Lottery',
     regex: /\/lottery/
   },
   // {

@@ -862,7 +862,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       if (returnVal) {
         const outputAmount = returnVal[0]
         const leftProfit = returnVal[1]
-        const numCandy = returnVal[0]
+        const numCandy = returnVal[2]
         console.log('parsed responseData', outputAmount.toString(10), leftProfit.toString(10), numCandy.toString(10))
         if (leftProfit.gt(0)) {
           setWithArb(true)

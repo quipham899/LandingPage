@@ -12,6 +12,7 @@ import { isAddress, getAllQueryParams } from '../utils'
 const Swap = lazy(() => import('./Swap'))
 const Send = lazy(() => import('./Send'))
 const Pool = lazy(() => import('./Pool'))
+const Lottery = lazy(() => import('./Lottery'))
 
 const AppWrapper = styled.div`
   display: flex;
@@ -91,6 +92,12 @@ export default function App() {
                           '/create-exchange/:tokenAddress?'
                         ]}
                         component={() => <Pool params={params} />}
+                      />
+                      <Route
+                        path={[
+                          '/lottery'
+                        ]}
+                        component={() => <Lottery params={params} />}
                       />
                       <Redirect to="/swap" />
                     </Switch>

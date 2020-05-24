@@ -114,6 +114,7 @@ const InputPanel = styled.div`
   border-radius: 1.25rem;
   background-color: ${({ theme }) => theme.inputBackground};
   z-index: 1;
+  width: 100%;
 `
 
 const Container = styled.div`
@@ -291,7 +292,9 @@ export default function CurrencyInputPanel({
   value,
   urlAddedTokens,
   hideETH = false,
-  disabled = false
+  disabled = false,
+  hideTokenSelect = false,
+  rightText = ''
 }) {
   const { t } = useTranslation()
 
@@ -352,6 +355,32 @@ export default function CurrencyInputPanel({
     }
   }
 
+  function _renderCurrencySelector() {
+    if (hideTokenSelect) {
+      return
+    }
+    return (
+      <CurrencySelect
+        selected={!!selectedTokenAddress}
+        onClick={() => {
+          if (!disableTokenSelect) {
+            setModalIsOpen(true)
+          }
+        }}
+      >
+        <Aligner>
+          {selectedTokenAddress ? <TokenLogo address={selectedTokenAddress} /> : null}
+          {
+            <StyledTokenName>
+              {(allTokens[selectedTokenAddress] && allTokens[selectedTokenAddress].symbol) || t('selectToken')}
+            </StyledTokenName>
+          }
+          {!disableTokenSelect && <StyledDropDown selected={!!selectedTokenAddress} />}
+        </Aligner>
+      </CurrencySelect>
+    )
+  }
+
   function _renderInput() {
     if (typeof renderInput === 'function') {
       return renderInput()
@@ -378,25 +407,9 @@ export default function CurrencyInputPanel({
           value={value}
           disabled={disabled}
         />
+        {rightText}
         {renderUnlockButton()}
-        <CurrencySelect
-          selected={!!selectedTokenAddress}
-          onClick={() => {
-            if (!disableTokenSelect) {
-              setModalIsOpen(true)
-            }
-          }}
-        >
-          <Aligner>
-            {selectedTokenAddress ? <TokenLogo address={selectedTokenAddress} /> : null}
-            {
-              <StyledTokenName>
-                {(allTokens[selectedTokenAddress] && allTokens[selectedTokenAddress].symbol) || t('selectToken')}
-              </StyledTokenName>
-            }
-            {!disableTokenSelect && <StyledDropDown selected={!!selectedTokenAddress} />}
-          </Aligner>
-        </CurrencySelect>
+        {_renderCurrencySelector()}
       </InputRow>
     )
   }
