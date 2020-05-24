@@ -829,10 +829,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         try {
           const provider = ethers2.getDefaultProvider('ropsten')
           const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
-          console.log('contract', candyArberV5)
-          console.log('staic call', candyArberV5.functions.swap)
-
           console.log('static call here', candyArberV5.staticCall)
+          // TODO figure out how to send value with this call or create a function without payable
           let response = await candyArberV5.callStatic.swap(
             outputCurrency,
             inputCurrency,
@@ -843,7 +841,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             withArb,
             withCandy
           )
-
           console.log('response from eth_call', response)
         } catch (e) {
           console.error(e)
