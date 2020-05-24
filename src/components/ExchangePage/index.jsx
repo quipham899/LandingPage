@@ -869,10 +869,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
       independentValueParsed,
       dependentValueMinumum,
-      slippageParamValueMaximum,
+      ethers.utils.parseEther('0.00001'),
       deadline,
       withArb,
-      withCandy
+      withCandy,
+      {
+        value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
+      }
     )
   }
 
