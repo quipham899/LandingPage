@@ -774,6 +774,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const [withArb, setWithArb] = useState(true)
   const [withCandy, setWithCandy] = useState(true)
   const [candyCount, setCandyCount] = useState(ethers.utils.bigNumberify(0))
+  const [profit, setProfit] = useState(ethers.utils.bigNumberify(0))
+  const [candyShopExchangeRate, setCandyShopExchangeRate] = useState(new BigNumber(0))
 
   useEffect(() => {
     async function fetchCandyPrice() {
@@ -816,22 +818,22 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         if (oldData === newData) {
           return
         }
-        console.log(
-          'fetching',
-          outputCurrency,
-          inputCurrency,
-          independentValueParsed.toString(10),
-          dependentValueMinumum.toString(10),
-          slippageParamValueMaximum.toString(10),
-          withArb,
-          withCandy
-        )
+        // console.log(
+        //   'fetching',
+        //   outputCurrency,
+        //   inputCurrency,
+        //   independentValueParsed.toString(10),
+        //   dependentValueMinumum.toString(10),
+        //   slippageParamValueMaximum.toString(10),
+        //   withArb,
+        //   withCandy
+        // )
         setOldData(newData)
 
         try {
           const web3 = new Web3('https://ropsten.infura.io/v3/73d0b3b9a4b2499da81c71a2b2a473a9')
           const contract = new web3.eth.Contract(CANDYARBER_ABI, CANDYARBER_ADDRESS)
-          const response = await contract.methods.swap(
+          returnVal = await contract.methods.swap(
             outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
             inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
             independentValueParsed,
@@ -844,37 +846,27 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             from: account,
             value: inputCurrency === ETH ? independentValueParsed : 0
           })
-          // const provider = ethers2.getDefaultProvider('ropsten')
-          
-          // const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
-          // console.log('static call here', candyArberV5.staticCall)
-          // TODO figure out how to send value with this call or create a function without payable
-          // let response = await candyArberV5.callStatic.swap(
-          //   outputCurrency,
-          //   inputCurrency,
-          //   independentValueParsed,
-          //   dependentValueMinumum,
-          //   slippageParamValueMaximum,
-          //   deadline,
-          //   withArb,
-          //   withCandy
-          // )
-          console.log('response from eth_call', response)
+          console.log('response from eth_call', returnVal)
         } catch (e) {
           console.error(e)
         }
       } else {
       }
       if (returnVal) {
-        const outputAmount = returnVal[0]
-        const leftProfit = returnVal[1]
-        const numCandy = returnVal[2]
-        console.log('parsed responseData', outputAmount.toString(10), leftProfit.toString(10), numCandy.toString(10))
+        const outputAmount = ethers.utils.bigNumberify(returnVal[0])
+        const leftProfit = ethers.utils.bigNumberify(returnVal[1])
+        const numCandy = ethers.utils.bigNumberify(returnVal[2])
         if (leftProfit.gt(0)) {
-          setWithArb(true)
+          const inputAmountBN = new BigNumber(independentValueParsed.toString(10))
+          const outputAmountBN = new BigNumber(outputAmount.toString(10))
           setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
+          setWithArb(true)
+          setProfit(leftProfit)
+          setCandyShopExchangeRate(inputAmountBN.div(outputAmountBN).dp(6))
         } else {
           setWithArb(false)
+          setProfit(ethers.utils.bigNumberify(0))
+          setCandyShopExchangeRate(new BigNumber(0))
           if (withCandy) {
             setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
           }
@@ -998,24 +990,36 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       )}
       <OversizedPanel hideBottom>
         <ExchangeRateWrapper
-          onClick={() => {
-            setInverted(inverted => !inverted)
-          }}
+          
         >
-          <ExchangeRate>{t('exchangeRate')}</ExchangeRate>
-          {inverted ? (
+          <ExchangeRate>Candyshop Exchange Rate</ExchangeRate>
+            <span>
+              {candyShopExchangeRate.eq(new BigNumber(0))
+                ?
+                  (exchangeRate
+                    ? `1 ${outputSymbol} = ${amountFormatter(exchangeRateInverted, 18, 6, false)} ${inputSymbol}`
+                    : ' - ')
+                :
+                  (`1 ${outputSymbol} = ${candyShopExchangeRate} ${inputSymbol}`)
+                }
+            </span>
+          {/* )} */}
+        </ExchangeRateWrapper>
+        <ExchangeRateWrapper>
+          <ExchangeRate>Uniswap Exchange Rate</ExchangeRate>
+          {/* {inverted ? (
             <span>
               {exchangeRate
                 ? `1 ${inputSymbol} = ${amountFormatter(exchangeRate, 18, 6, false)} ${outputSymbol}`
                 : ' - '}
             </span>
-          ) : (
+          ) : ( */}
             <span>
               {exchangeRate
                 ? `1 ${outputSymbol} = ${amountFormatter(exchangeRateInverted, 18, 6, false)} ${inputSymbol}`
                 : ' - '}
             </span>
-          )}
+          {/* )} */}
         </ExchangeRateWrapper>
       </OversizedPanel>
       <TransactionDetails
