@@ -263,7 +263,7 @@ function getMarketRate(
 
 export default function ExchangePage({ initialCurrency, sending = false, params }) {
   const { t } = useTranslation()
-  const { account, chainId, error } = useWeb3React()
+  const { library, account, chainId, error } = useWeb3React()
 
   const urlAddedTokens = {}
   if (params.inputCurrency) {
@@ -760,9 +760,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     }
   }, [newOutputDetected, setShowOutputWarning])
 
-  const { library } = useWeb3React()
-  const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library)
-  const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library)
+  const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library, account)
+  const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library, account)
 
   const [withArb, setWithArb] = useState(true)
   const [withCandy, setWithCandy] = useState(true)
