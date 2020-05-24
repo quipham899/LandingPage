@@ -12,12 +12,12 @@ const NETWORK_URL =
   process.env.REACT_APP_IS_PRODUCTION_DEPLOY === 'true'
     ? process.env.REACT_APP_NETWORK_URL_PROD
     : process.env.REACT_APP_NETWORK_URL
-
+console.log(NETWORK_URL)
 export const network = new NetworkConnector({
   urls: { [Number(process.env.REACT_APP_CHAIN_ID)]: NETWORK_URL },
   pollingInterval: POLLING_INTERVAL * 3
 })
-
+console.log(network)
 export const injected = new InjectedConnector({
   supportedChainIds: [Number(process.env.REACT_APP_CHAIN_ID)]
 })
