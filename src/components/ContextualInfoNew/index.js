@@ -94,7 +94,7 @@ export default function ContextualInfo({
   slippageWarning,
   highSlippageWarning,
   brokenTokenWarning,
-  dropDownContent
+  dropDownContent,
 }) {
   // const [showDetails, setShowDetails] = useState(true)
   return !allowExpand ? (
@@ -102,15 +102,15 @@ export default function ContextualInfo({
   ) : (
     <>
       <SummaryWrapperContainer
-        // onClick={() => {
-        //   !showDetails &&
-        //     ReactGA.event({
-        //       category: 'Advanced Interaction',
-        //       action: 'Open Advanced Details',
-        //       label: 'Swap/Send Page Details'
-        //     })
-        //   setShowDetails(s => !s)
-        // }}
+      // onClick={() => {
+      //   !showDetails &&
+      //     ReactGA.event({
+      //       category: 'Advanced Interaction',
+      //       action: 'Open Advanced Details',
+      //       label: 'Swap/Send Page Details'
+      //     })
+      //   setShowDetails(s => !s)
+      // }}
       >
         <>
           <ErrorSpan isError={isError} slippageWarning={slippageWarning} highSlippageWarning={highSlippageWarning}>
