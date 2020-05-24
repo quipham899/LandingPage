@@ -62,12 +62,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "numTokensObtained",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftProfit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numCandy",
         "type": "uint256"
       }
     ],
@@ -116,15 +121,38 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "numEthObtained",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftProfit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numCandy",
         "type": "uint256"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveTokenToCandyShopArber",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -251,17 +279,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "numEthObtained",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "leftProfit",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "candyCount",
+        "name": "",
         "type": "uint256"
       }
     ],

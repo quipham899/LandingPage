@@ -828,41 +828,12 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         )
         setOldData(newData)
 
-        try {
-          const web3 = new Web3('https://ropsten.infura.io/v3/73d0b3b9a4b2499da81c71a2b2a473a9')
-          const contract = new web3.eth.Contract(CANDYARBER_ABI, CANDYARBER_ADDRESS)
-          const response = await contract.methods.swap(
-            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
-            independentValueParsed,
-            dependentValueMinumum,
-            slippageParamValueMaximum,
-            deadline,
-            withArb,
-            withCandy
-          ).call({
-            from: account,
-            value: inputCurrency === ETH ? independentValueParsed : 0
-          })
-          // const provider = ethers2.getDefaultProvider('ropsten')
-          
-          // const candyArberV5 = getContractV5(CANDYARBER_ADDRESS, CANDYARBER_ABI, provider)
-          // console.log('static call here', candyArberV5.staticCall)
-          // TODO figure out how to send value with this call or create a function without payable
-          // let response = await candyArberV5.callStatic.swap(
-          //   outputCurrency,
-          //   inputCurrency,
-          //   independentValueParsed,
-          //   dependentValueMinumum,
-          //   slippageParamValueMaximum,
-          //   deadline,
-          //   withArb,
-          //   withCandy
-          // )
-          console.log('response from eth_call', response)
-        } catch (e) {
-          console.error(e)
-        }
+        // get reserves post user swap
+        var reserves = await getReservesFromContract(outputCurrency, independentValueParsed, true)
+
+        // calculate arbitrage amount
+        var arbAmount = await calculateArbNum(reserves, true)
+        // if arb amount is x% of V1 reserve we just show a better swap possible
       } else {
       }
       if (returnVal) {
@@ -896,6 +867,37 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       withArb,
       withCandy
     )
+  }
+
+  async function getReservesFromContract(token, amount, ethToToken) {
+    var reservesPostUserSwap = await candyArber.getBalance(
+      token,
+      ethers.utils.formatEther(amount),
+      ethToToken ? true : false
+    )
+    return reservesPostUserSwap
+  }
+
+  async function calculateArbNum(V1Eth, V1Token, V2Eth, V2Token, isEthToToken) {
+    let ethBalanceV1 = ethers.utils.formatEther(V1Eth) // need to fetch this from contract
+    let tokenBalaceV1 = ethers.utils.formatEther(V1Token) // need to fetch this from contract
+    let ethBalanceV2 = ethers.utils.formatEther(V2Eth) // need to fetch this from contract
+    let tokenBalaceV2 = ethers.utils.formatEther(V2Token) // need to fetch this from contract
+
+    let _x1 = isEthToToken ? ethBalanceV1 : tokenBalaceV1
+    let _y1 = isEthToToken ? tokenBalaceV1 : ethBalanceV1
+    let _x2 = isEthToToken ? ethBalanceV2 : tokenBalaceV2
+    let _y2 = isEthToToken ? tokenBalaceV2 : ethBalanceV2
+
+    let _sqrt = Math.sqrt(_x1 * _y1 * _x2 * _y2)
+    let a = _x1 * _y2
+    let b = _x1 + _x2
+
+    let y = a - _sqrt
+    y = y / b
+
+    arbNum = y
+    return arbNum
   }
 
   return (
