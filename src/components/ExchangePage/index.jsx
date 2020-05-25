@@ -399,6 +399,8 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const outputValueParsed = independentField === OUTPUT ? independentValueParsed : dependentValue
   const outputValueFormatted = independentField === OUTPUT ? independentValue : dependentValueFormatted
 
+  const { exchangeAddress } = useTokenDetails(inputCurrency === ETH ? outputCurrency : inputCurrency)
+  const inputExchangeBalance = useAddressBalance(exchangeAddress, inputCurrency)
   // validate + parse independent value
   const [independentError, setIndependentError] = useState()
   useEffect(() => {
@@ -411,7 +413,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         } else {
           setIndependentValueParsed(parsedValue)
           setIndependentError(null)
-          setWithArb(true)
+          if (parsedValue.gt(inputExchangeBalance.div(10))) {
+            console.log('true')
+            setWithArb(true)
+          } else {
+            console.log('false')
+            setWithArb(false)
+          }
         }
       } catch {
         setIndependentError(t('inputNotValid'))
@@ -790,78 +798,6 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     fetchCandyPrice()
   }, [inputCurrency])
 
-  let [oldData, setOldData] = useState()
-  useEffect(() => {
-    async function fetchCandyStoreOutput() {
-      const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
-      let returnVal
-      if (
-        !!inputCurrency &&
-        !!outputCurrency &&
-        !!independentValueParsed &&
-        !!dependentValueMinumum &&
-        !!slippageParamValueMaximum
-      ) {
-        // check cached data
-        const newData = ethers.utils.defaultAbiCoder.encode(
-          ['address', 'address', 'uint', 'uint', 'uint', 'bool', 'bool'],
-          [
-            outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-            inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
-            independentValueParsed,
-            dependentValueMinumum,
-            slippageParamValueMaximum,
-            withArb,
-            withCandy
-          ]
-        )
-        if (oldData === newData) {
-          return
-        }
-        // console.log(
-        //   'fetching',
-        //   outputCurrency,
-        //   inputCurrency,
-        //   independentValueParsed.toString(10),
-        //   dependentValueMinumum.toString(10),
-        //   slippageParamValueMaximum.toString(10),
-        //   withArb,
-        //   withCandy
-        // )
-        setOldData(newData)
-
-        // get reserves post user swap
-        var reserves = await getReservesFromContract(outputCurrency, independentValueParsed, true)
-
-        // calculate arbitrage amount
-        var arbAmount = await calculateArbNum(reserves, true)
-        // if arb amount is x% of V1 reserve we just show a better swap possible
-      } else {
-      }
-      if (returnVal) {
-        const outputAmount = ethers.utils.bigNumberify(returnVal[0])
-        const leftProfit = ethers.utils.bigNumberify(returnVal[1])
-        const numCandy = ethers.utils.bigNumberify(returnVal[2])
-        if (leftProfit.gt(0)) {
-          const inputAmountBN = new BigNumber(independentValueParsed.toString(10))
-          const outputAmountBN = new BigNumber(outputAmount.toString(10))
-          setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
-          setWithArb(true)
-          setProfit(leftProfit)
-          setCandyShopExchangeRate(inputAmountBN.div(outputAmountBN).dp(6))
-        } else {
-          setWithArb(false)
-          setProfit(ethers.utils.bigNumberify(0))
-          setCandyShopExchangeRate(new BigNumber(0))
-          if (withCandy) {
-            setCandyCount(numCandy.div(ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(18))))
-          }
-        }
-      }
-    }
-    fetchCandyStoreOutput()
-  }, [independentValueParsed, inputCurrency, outputCurrency, dependentValueMinumum])
-
   async function candyStoreSwap() {
     const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
     await candyArber.swap(
@@ -869,10 +805,13 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
       independentValueParsed,
       dependentValueMinumum,
-      slippageParamValueMaximum,
+      ethers.utils.parseEther('0.00001'),
       deadline,
       withArb,
-      withCandy
+      withCandy,
+      {
+        value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
+      }
     )
   }
 
