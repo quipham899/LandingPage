@@ -129,7 +129,7 @@ export const broken777Tokens = [
 
 export const NetworkContextName = 'NETWORK'
 
-export const ropstenDAI = '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd'
+export const ropstenDAI = '0xf80a32a835f79d7787e8a8ee5721d0feafd78108'
 export const ropstenDAIExchange = '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
 export const mainnetDAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 

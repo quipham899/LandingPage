@@ -849,8 +849,8 @@ setShowSuccess(true)
       ethers.utils.parseEther('0.01'),
       deadline,
       arbNum.toString(10),
-      true,
-      false,
+      withArb,
+      withCandy,
       {
         value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
       }
