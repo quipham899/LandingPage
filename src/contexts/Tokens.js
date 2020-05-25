@@ -662,35 +662,11 @@ export const INITIAL_TOKENS_CONTEXT = {
     }
   },
   3: {
-    '0x6ce27497a64fffb5517aa4aee908b1e7eb63b9ff': {
-      [NAME]: 'cDai',
-      [SYMBOL]: 'cDAI',
-      [DECIMALS]: 6,
-      [EXCHANGE_ADDRESS]: '0x91D04010d8b3A17338e1d0EBEc5B7A82A2304feC'
-    },
     '0xB5E5D0F8C0cbA267CD3D7035d6AdC8eBA7Df7Cdd': {
       [NAME]: 'Dai Stable Coin',
       [SYMBOL]: 'DAI',
       [DECIMALS]: 18,
       [EXCHANGE_ADDRESS]: '0x386045dA04eCbe32DA4Ce6bD78a224a3543c16F0'
-    },
-    '0x20fE562d797A42Dcb3399062AE9546cd06f63280': {
-      [NAME]: 'ChainLink Token',
-      [SYMBOL]: 'LINK',
-      [DECIMALS]: 18,
-      [EXCHANGE_ADDRESS]: '0x4426F644f5999Aef8A7d87F0Af6e0755E94a2588'
-    },
-    '0x1E6Fd758338F59cF52C8427088077F16b60a8bd4': {
-      [NAME]: 'Decentraland Mana',
-      [SYMBOL]: 'MANA',
-      [DECIMALS]: 18,
-      [EXCHANGE_ADDRESS]: '0x498a9635A07E0EC9b526bbB12187855E2f18eA22'
-    },
-    '0x9636246bf34E688c6652Af544418B38eB51D2c43': {
-      [NAME]: 'Basic Attention Token',
-      [SYMBOL]: 'BAT',
-      [DECIMALS]: 18,
-      [EXCHANGE_ADDRESS]: '0x12895565343427E184dAeb97815D6722E9468E6d'
     },
     '0xf7c650899bB250bAeD0AB4166dF2Ff98d2637d58': {
       [NAME]: 'Get Rich Ponzi Scheme',
