@@ -805,26 +805,37 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
       inputCurrency === ETH
     )
     const { ethBalanceV1, tokenBalaceV1, ethBalanceV2, tokenBalaceV2 } = reserves
-    console.log(ethBalanceV1.toString(10), tokenBalaceV1.toString(10), ethBalanceV2.toString(10), tokenBalaceV2.toString(10))
     const arbNum = await calculateArbNum(ethBalanceV1, ethBalanceV2, tokenBalaceV1, tokenBalaceV2, inputCurrency === ETH)
     console.log(arbNum)
-    // const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
-    // const result = await candyArber.swap(
-    //   outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-    //   inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
-    //   independentValueParsed,
-    //   dependentValueMinumum,
-    //   ethers.utils.parseEther('0.00001'),
-    //   deadline,
-    //   withArb,
-    //   withCandy,
-    //   {
-    //     value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
-    //   }
-    // )
-    // console.log('txresult',result)
-    // // parse result for events
-    // const profit = new BigNumber(0.2).dp(6)
+    const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
+    console.log(
+      outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+      inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+      independentValueParsed,
+      dependentValueMinumum,
+      ethers.utils.parseEther('0.01'),
+      deadline,
+      arbNum.toString(10),
+      true,
+      false
+    )
+    const result = await candyArber.swap(
+      outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+      inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+      independentValueParsed,
+      dependentValueMinumum,
+      ethers.utils.parseEther('0.01'),
+      deadline,
+      arbNum.toString(10),
+      true,
+      false,
+      {
+        value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
+      }
+    )
+    console.log('txresult',result)
+    // parse result for events
+    const profit = new BigNumber(0.2).dp(6)
     
   }
 
@@ -845,9 +856,10 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
 
     let _sqrt = Math.sqrt(_x1 * _y1 * _x2 * _y2)
     let a = _x1 * _y2
-    let b = _x1 + _x2
+    let b = _x1.add(_x2)
 
     let y = a - _sqrt
+
     y = y / b
 
     let arbNum = y
