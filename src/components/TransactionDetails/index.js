@@ -656,7 +656,7 @@ export default function TransactionDetails(props) {
           <ValueWrapper>
             {b(`${props.candyTknPrice.dp(6)} ${props.inputSymbol}`)}
           </ValueWrapper>
-          <SpaceTop>
+          {/* <SpaceTop>
             You are getting{' '}
             <ValueWrapper>
               {b(
@@ -668,7 +668,7 @@ export default function TransactionDetails(props) {
               )}
             </ValueWrapper>{' '}
             Candies for doing this trade.
-          </SpaceTop>
+          </SpaceTop> */}
         </TotalCandy>
         <DeadlineSelector>
           Set swap deadline (minutes from now)

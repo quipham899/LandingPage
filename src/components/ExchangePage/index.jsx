@@ -842,7 +842,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     let y = a - _sqrt
     y = y / b
 
-    arbNum = y
+    let arbNum = y
     return arbNum
   }
 
@@ -945,7 +945,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
         ''
       )}
       <OversizedPanel hideBottom>
-        <ExchangeRateWrapper>
+        {/* <ExchangeRateWrapper>
           <ExchangeRate>Candyshop Exchange Rate</ExchangeRate>
           <span>
             {candyShopExchangeRate.eq(new BigNumber(0))
@@ -954,8 +954,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
                 : ' - '
               : `1 ${outputSymbol} = ${candyShopExchangeRate} ${inputSymbol}`}
           </span>
-          {/* )} */}
-        </ExchangeRateWrapper>
+        </ExchangeRateWrapper> */}
         <ExchangeRateWrapper>
           <ExchangeRate>Uniswap Exchange Rate</ExchangeRate>
           {/* {inverted ? (
