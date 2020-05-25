@@ -296,7 +296,8 @@ export default function CurrencyInputPanel({
   disabled = false,
   hideTokenSelect = false,
   rightText = '',
-  sponsor = false
+  sponsor = false,
+  arb = false
 }) {
   const { t } = useTranslation()
 
@@ -327,7 +328,7 @@ export default function CurrencyInputPanel({
               let useUserBalance = false
               estimatedGas = await tokenContract.estimate
                 .approve(
-                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
+                  sponsor ? constants.CANDYSTORE_ADDRESS : arb ? constants.CANDYARBER_ADDRESS : selectedTokenExchangeAddress,
                   ethers.constants.MaxUint256
                 )
                 .catch(e => {
@@ -336,14 +337,14 @@ export default function CurrencyInputPanel({
               if (!estimatedGas) {
                 // general fallback for tokens who restrict approval amounts
                 estimatedGas = await tokenContract.estimate.approve(
-                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
+                  sponsor ? constants.CANDYSTORE_ADDRESS : arb ? constants.CANDYARBER_ADDRESS : selectedTokenExchangeAddress,
                   userTokenBalance
                 )
                 useUserBalance = true
               }
               tokenContract
                 .approve(
-                  sponsor ? constants.CANDYSTORE_ADDRESS : selectedTokenExchangeAddress,
+                  sponsor ? constants.CANDYSTORE_ADDRESS : arb ? constants.CANDYARBER_ADDRESS : selectedTokenExchangeAddress,
                   useUserBalance ? userTokenBalance : ethers.constants.MaxUint256,
                   {
                     gasLimit: calculateGasMargin(estimatedGas, GAS_MARGIN)

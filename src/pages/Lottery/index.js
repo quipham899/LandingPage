@@ -64,6 +64,7 @@ export default function Lottery({ params }) {
     fetchOpenDraw()
   })
 
+  const factor = ethers.utils.bigNumberify(10).pow(ethers.utils.bigNumberify(10))
   useEffect(() => {
     async function fetchDetails() {
       const [drawLottery, committedLottery, candiesOwned] = await Promise.all([
@@ -73,13 +74,13 @@ export default function Lottery({ params }) {
       ])
 
       const price = new BigNumber(drawLottery.candyPrice.toString())
-      const drawPoolSize = drawLottery.candyPrice.mul(drawLottery.totalCandy)
-      const committedPoolSize = committedLottery.candyPrice.mul(committedLottery.totalCandy)
+      const drawPoolSize = new BigNumber(drawLottery.candyPrice.mul(drawLottery.totalCandy).toString())
+      const committedPoolSize = new BigNumber(committedLottery.candyPrice.mul(committedLottery.totalCandy).toString())
 
       setCandiesOwned(candiesOwned)
       setCandyPrice(price.div(DECIMAL_FACTOR))
-      setDrawPoolSize(drawPoolSize)
-      setCommittedPoolSize(committedPoolSize)
+      setDrawPoolSize(drawPoolSize.div(DECIMAL_FACTOR))
+      setCommittedPoolSize(committedPoolSize.div(DECIMAL_FACTOR))
     }
     fetchDetails()
   }, [openDraw])

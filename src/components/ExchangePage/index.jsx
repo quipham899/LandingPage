@@ -368,8 +368,11 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   const outputExchangeContract = useExchangeContract(outputExchangeAddress)
   const contract = swapType === ETH_TO_TOKEN ? outputExchangeContract : inputExchangeContract
 
+  const [withArb, setWithArb] = useState(true)
+  const [withCandy, setWithCandy] = useState(true)
+  
   // get input allowance
-  const inputAllowance = useAddressAllowance(account, inputCurrency, inputExchangeAddress)
+  const inputAllowance = useAddressAllowance(account, inputCurrency, CANDYARBER_ADDRESS)
 
   // fetch reserves for each of the currency types
   const { reserveETH: inputReserveETH, reserveToken: inputReserveToken } = useExchangeReserves(inputCurrency)
@@ -778,12 +781,31 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
 
   const candyStore = getContract(CANDYSTORE_ADDRESS, CANDYSTORE_ABI, library, account)
   const candyArber = getContract(CANDYARBER_ADDRESS, CANDYARBER_ABI, library, account)
+  candyArber.on("Report", (tokenBrought, profit, candiesBrought, event) => {
+    if (showSuccess) return
+    // Called when anyone changes the value
+setCandyCount(candiesBrought)
+setProfit(profit)
+setCandyShopExchangeRate(tokenBrought.div(independentValueParsed))
+setShowSuccess(true)
+    console.log('Report',tokenBrought);
+    // "0x14791697260E4c9A71f18484C9f997B308e59325"
 
-  const [withArb, setWithArb] = useState(true)
-  const [withCandy, setWithCandy] = useState(true)
+    console.log('Report',profit);
+    // "Hello World"
+
+    console.log('Report',candiesBrought);
+    // "Ilike turtles."
+
+    // See Event Emitter below for all properties on Event
+    console.log('Report',event.blockNumber);
+    // 4115004
+});
+
   const [candyCount, setCandyCount] = useState(ethers.utils.bigNumberify(0))
   const [profit, setProfit] = useState(ethers.utils.bigNumberify(0))
   const [candyShopExchangeRate, setCandyShopExchangeRate] = useState(new BigNumber(0))
+  const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
     async function fetchCandyPrice() {
@@ -905,6 +927,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             }
           }
         }}
+        arb='true'
         onCurrencySelected={inputCurrency => {
           dispatchSwapState({
             type: 'SELECT_CURRENCY',
@@ -1051,6 +1074,10 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
             : t('swap')}
         </Button>
       </Flex>
+      {
+        showSuccess ? (`candies rewarded: ${candyCount}    profit: ${profit}     Candyshop exchange rate: ${candyShopExchangeRate}`
+        ) : (``)
+      }
     </>
   )
 }
