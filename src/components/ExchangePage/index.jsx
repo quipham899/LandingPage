@@ -786,7 +786,7 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
     // Called when anyone changes the value
 setCandyCount(candiesBrought)
 setProfit(profit)
-setCandyShopExchangeRate(tokenBrought.div(independentValueParsed))
+setCandyShopExchangeRate(independentValueParsed.div(tokenBrought))
 setShowSuccess(true)
     console.log('Report',tokenBrought);
     // "0x14791697260E4c9A71f18484C9f997B308e59325"
