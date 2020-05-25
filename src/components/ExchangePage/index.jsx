@@ -799,37 +799,45 @@ export default function ExchangePage({ initialCurrency, sending = false, params 
   }, [inputCurrency])
 
   async function candyStoreSwap() {
-    const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
-    await candyArber.swap(
-      outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
-      inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+    const reserves = await getReservesFromContract(
+      inputCurrency === ETH ? outputCurrency : inputCurrency,
       independentValueParsed,
-      dependentValueMinumum,
-      ethers.utils.parseEther('0.00001'),
-      deadline,
-      withArb,
-      withCandy,
-      {
-        value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
-      }
+      inputCurrency === ETH
     )
+    const { ethBalanceV1, tokenBalaceV1, ethBalanceV2, tokenBalaceV2 } = reserves
+    console.log(ethBalanceV1.toString(10), tokenBalaceV1.toString(10), ethBalanceV2.toString(10), tokenBalaceV2.toString(10))
+    const arbNum = await calculateArbNum(ethBalanceV1, ethBalanceV2, tokenBalaceV1, tokenBalaceV2, inputCurrency === ETH)
+    console.log(arbNum)
+    // const deadline = Math.ceil(Date.now() / 1000) + deadlineFromNow
+    // const result = await candyArber.swap(
+    //   outputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : outputCurrency,
+    //   inputCurrency === ETH ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : inputCurrency,
+    //   independentValueParsed,
+    //   dependentValueMinumum,
+    //   ethers.utils.parseEther('0.00001'),
+    //   deadline,
+    //   withArb,
+    //   withCandy,
+    //   {
+    //     value: inputCurrency === ETH ? independentValueParsed : ethers.utils.bigNumberify(0)
+    //   }
+    // )
+    // console.log('txresult',result)
+    // // parse result for events
+    // const profit = new BigNumber(0.2).dp(6)
+    
   }
 
   async function getReservesFromContract(token, amount, ethToToken) {
     var reservesPostUserSwap = await candyArber.getBalance(
       token,
-      ethers.utils.formatEther(amount),
+      amount,
       ethToToken ? true : false
     )
     return reservesPostUserSwap
   }
 
-  async function calculateArbNum(V1Eth, V1Token, V2Eth, V2Token, isEthToToken) {
-    let ethBalanceV1 = ethers.utils.formatEther(V1Eth) // need to fetch this from contract
-    let tokenBalaceV1 = ethers.utils.formatEther(V1Token) // need to fetch this from contract
-    let ethBalanceV2 = ethers.utils.formatEther(V2Eth) // need to fetch this from contract
-    let tokenBalaceV2 = ethers.utils.formatEther(V2Token) // need to fetch this from contract
-
+  async function calculateArbNum(ethBalanceV1, ethBalanceV2, tokenBalaceV1, tokenBalaceV2, isEthToToken) {
     let _x1 = isEthToToken ? ethBalanceV1 : tokenBalaceV1
     let _y1 = isEthToToken ? tokenBalaceV1 : ethBalanceV1
     let _x2 = isEthToToken ? ethBalanceV2 : tokenBalaceV2
