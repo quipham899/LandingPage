@@ -29,6 +29,7 @@
     "i18next-browser-languagedetector": "^3.0.1",
     "i18next-xhr-backend": "^2.0.1",
     "jazzicon": "^1.5.0",
+    "package.json": "^2.0.1",
     "polished": "^3.3.2",
     "qrcode.react": "^0.9.3",
     "react": "^16.8.6",
@@ -44,7 +45,8 @@
     "react-use-gesture": "^6.0.14",
     "styled-components": "^4.2.0",
     "typescript": "^3.8.2",
-    "web3": "^1.2.8"
+    "web3": "^1.2.8",
+    "yarn": "^1.22.4"
   },
   "scripts": {
     "start": "react-scripts start",
